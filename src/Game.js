@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, View, Platform, Dimensions } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { setBGMEnabled } from './services/musicService';
 import { setSFXEnabled } from './services/sfxService';
@@ -114,15 +114,32 @@ export default function Game() {
   };
 
   return (
-    <View style={styles.container}>
-      {renderScreen()}
+    <View style={styles.background}>
+      <View style={Platform.OS === 'web' ? styles.mobileBox : styles.container}>
+        {renderScreen()}
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  background: {
+    flex: 1,
+    backgroundColor: '#FFF8E7',
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+  },
   container: {
     flex: 1,
+  },
+  mobileBox: {
+    width: '100%',
+    maxWidth: 430,
+    height: '100%',
+    backgroundColor: '#FFF8E7',
+    overflow: 'hidden',
+    paddingBottom: 20,
+    borderRadius: 12,
   },
   gameContainer: {
     flex: 1,

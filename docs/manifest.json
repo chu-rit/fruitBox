@@ -1,25 +1,25 @@
 {
-  "description": "Collect & Stack fruits!",
-  "scope": "/fruitBox/",
   "orientation": "portrait",
-  "theme_color": "#FF4444",
-  "name": "Fruit Box",
   "display": "standalone",
-  "start_url": "/fruitBox/",
-  "short_name": "FruitBox",
   "background_color": "#FFF8E7",
+  "scope": "/fruitBox/",
+  "name": "Fruit Box",
+  "description": "Collect & Stack fruits!",
+  "short_name": "FruitBox",
+  "start_url": "/fruitBox/",
   "icons": [
     {
-      "src": "/fruitBox/icon.png",
+      "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable",
-      "sizes": "192x192"
+      "src": "/fruitBox/icon.png"
     },
     {
-      "src": "/fruitBox/icon.png",
+      "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable",
-      "sizes": "512x512"
+      "src": "/fruitBox/icon.png"
     }
-  ]
+  ],
+  "theme_color": "#FF4444"
 }

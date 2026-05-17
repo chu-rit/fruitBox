@@ -194,7 +194,8 @@ const generateCustomerRequest = (score) => {
 
 export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_SIZE }) {
   const GRID_SIZE = mapSize;
-  const CELL_SIZE = Math.floor((width - 40) / GRID_SIZE);
+  const appWidth = Platform.OS === 'web' ? Math.min(width, 430) : width;
+  const CELL_SIZE = Math.floor((appWidth - 40) / GRID_SIZE);
   
   const [board, setBoard] = useState(() => generateBoard(0, GRID_SIZE, generateCustomerRequest(0)));
   const [selection, setSelection] = useState(null);
