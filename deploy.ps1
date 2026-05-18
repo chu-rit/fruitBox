@@ -53,8 +53,9 @@ $manifest = @{
 
 # Generate sw.js
 Write-Host "Generating sw.js..." -ForegroundColor Cyan
+$cacheVersion = Get-Date -Format "yyyyMMddHHmmss"
 $sw = @"
-const CACHE_NAME = 'fruitbox-v1';
+const CACHE_NAME = 'fruitbox-$cacheVersion';
 const STATIC_ASSETS = ['/fruitBox/', '/fruitBox/index.html', '/fruitBox/manifest.json'];
 self.addEventListener('install', (e) => { e.waitUntil(caches.open(CACHE_NAME).then((c) => c.addAll(STATIC_ASSETS))); self.skipWaiting(); });
 self.addEventListener('activate', (e) => { e.waitUntil(caches.keys().then((keys) => Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k))))); self.clients.claim(); });
