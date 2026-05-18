@@ -3,91 +3,79 @@ import Constants from 'expo-constants';
 
 const isExpoGo = Constants.appOwnership === 'expo';
 
-let RewardedAd, RewardedAdEventType, AdEventType, TestIds, MobileAds;
+let InterstitialAd, AdEventType, TestIds, MobileAds;
 
 if (Platform.OS !== 'web' && !isExpoGo) {
   try {
     const ads = require('react-native-google-mobile-ads');
-    RewardedAd = ads.RewardedAd;
-    RewardedAdEventType = ads.RewardedAdEventType;
+    InterstitialAd = ads.InterstitialAd;
     AdEventType = ads.AdEventType;
     TestIds = ads.TestIds;
     MobileAds = ads.default;
-    console.log('[AdService] package loaded, TestIds:', JSON.stringify(TestIds));
     MobileAds().setRequestConfiguration({
       testDeviceIdentifiers: ['EMULATOR'],
     }).catch(() => {});
-    MobileAds().initialize()
-      .then(() => console.log('[AdService] MobileAds initialized'))
-      .catch(e => console.log('[AdService] MobileAds init error:', e));
+    MobileAds().initialize().catch(e => console.log('[AdService] init error:', e));
   } catch (e) {
     console.log('[AdService] require error:', e);
   }
-} else {
-  console.log('[AdService] skipped - web or ExpoGo, OS:', Platform.OS, 'isExpoGo:', isExpoGo);
 }
 
-const REWARDED_AD_UNIT_ID = Platform.OS !== 'web' && TestIds ? Platform.select({
-  android: TestIds.REWARDED,
-  ios: TestIds.REWARDED,
+// 실사용 APP ID: ca-app-pub-4086309578344734~4106328206 (AndroidManifest에 적용됨)
+// 실사용 광고 단위 ID (출시 시 교체):
+// android: 'ca-app-pub-XXXXXXXXXXXXXXXX/XXXXXXXXXX'
+// ios: 'ca-app-pub-XXXXXXXXXXXXXXXX/XXXXXXXXXX'
+const AD_UNIT_ID = Platform.OS !== 'web' && TestIds ? Platform.select({
+  android: TestIds.INTERSTITIAL,
+  ios: TestIds.INTERSTITIAL,
 }) : null;
 
-let rewardedAd = null;
+let interstitialAd = null;
 let isAdLoaded = false;
 let isAdLoading = false;
 
 export const loadRewardedAd = () => {
-  console.log('[AdService] loadRewardedAd called, RewardedAd:', !!RewardedAd, 'isExpoGo:', isExpoGo, 'OS:', Platform.OS);
-  if (Platform.OS === 'web' || isExpoGo || !RewardedAd) {
+  if (Platform.OS === 'web' || isExpoGo || !InterstitialAd) {
     return Promise.resolve({ success: true, skipped: true });
   }
   return new Promise((resolve) => {
     if (isAdLoaded || isAdLoading) {
-      console.log('[AdService] already loaded/loading:', isAdLoaded, isAdLoading);
       resolve({ success: isAdLoaded, skipped: false });
       return;
     }
     isAdLoading = true;
-    console.log('[AdService] creating ad request, unitId:', REWARDED_AD_UNIT_ID);
-    rewardedAd = RewardedAd.createForAdRequest(REWARDED_AD_UNIT_ID, {
+    interstitialAd = InterstitialAd.createForAdRequest(AD_UNIT_ID, {
       requestNonPersonalizedAdsOnly: true,
     });
-    const unsubLoaded = rewardedAd.addAdEventListener(RewardedAdEventType.LOADED, () => {
-      console.log('[AdService] ad LOADED');
+    const unsubLoaded = interstitialAd.addAdEventListener(AdEventType.LOADED, () => {
       isAdLoaded = true;
       isAdLoading = false;
       unsubLoaded();
       resolve({ success: true, skipped: false });
     });
-    rewardedAd.addAdEventListener(AdEventType.ERROR, (e) => {
+    interstitialAd.addAdEventListener(AdEventType.ERROR, (e) => {
       console.log('[AdService] ad ERROR:', e);
       isAdLoaded = false;
       isAdLoading = false;
       resolve({ success: false, skipped: true });
     });
-    rewardedAd.load();
+    interstitialAd.load();
   });
 };
 
 export const showRewardedAd = () => {
   return new Promise((resolve) => {
-    if (Platform.OS === 'web' || isExpoGo || !RewardedAd || !isAdLoaded) {
+    if (Platform.OS === 'web' || isExpoGo || !InterstitialAd || !isAdLoaded) {
       resolve({ success: true, skipped: true });
       return;
     }
-    const unsubEarned = rewardedAd.addAdEventListener(RewardedAdEventType.EARNED_REWARD, () => {
-      unsubEarned();
-    });
-    const unsubClosed = rewardedAd.addAdEventListener(AdEventType.CLOSED, () => {
-      console.log('[AdService] ad CLOSED');
+    const unsubClosed = interstitialAd.addAdEventListener(AdEventType.CLOSED, () => {
       isAdLoaded = false;
-      unsubEarned();
       unsubClosed();
       resolve({ success: true, skipped: false });
     });
-    console.log('[AdService] ad show()');
     try {
-      rewardedAd.show();
+      interstitialAd.show();
     } catch (e) {
       console.log('[AdService] show() error:', e);
       resolve({ success: true, skipped: true });
@@ -96,7 +84,7 @@ export const showRewardedAd = () => {
 };
 
 export const showRewardedAdOrSkip = async () => {
-  if (Platform.OS === 'web' || isExpoGo || !RewardedAd) {
+  if (Platform.OS === 'web' || isExpoGo || !InterstitialAd) {
     return { success: true, skipped: true };
   }
   return await showRewardedAd();
