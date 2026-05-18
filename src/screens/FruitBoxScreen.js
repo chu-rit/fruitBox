@@ -6,27 +6,27 @@ import {
   Pressable,
   Dimensions,
   Platform,
-  TouchableOpacity,
   Image,
   TextInput,
   Modal,
+  Animated as RNAnimated,
 } from 'react-native';
 import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
-  useAnimatedProps,
   useAnimatedReaction,
   withTiming,
   withSpring,
   withSequence,
   withDelay,
   runOnJS,
+  cancelAnimation,
+  runOnUI,
 } from 'react-native-reanimated';
 
-Animated.addWhitelistedNativeProps({ text: true });
-const ReanimatedText = Animated.createAnimatedComponent(Text);
 import FruitBlock from '../assets/icons/FruitBlock';
+
 
 const FRUIT_IMAGES = {
   apple: require('../assets/img/apple.png'),
@@ -39,7 +39,7 @@ const FRUIT_IMAGES = {
   pineapple: require('../assets/img/pineapple.png'),
 };
 import { saveRanking } from '../services/rankingService';
-import { showRewardedAdOrSkip } from '../services/adService';
+import { showRewardedAdOrSkip, loadRewardedAd } from '../services/adService';
 import { startBGM, stopBGM, pauseBGM, resumeBGM, setBGMRateByTime } from '../services/musicService';
 import { playStartSFX, playTradeSFX } from '../services/sfxService';
 
@@ -154,15 +154,15 @@ const getAvailableFruits = (score) => FRUITS_BY_LEVEL[Math.min(getLevel(score) -
 
 // Customer request ranges based on score
 const getCustomerRequestRange = (score) => {
-  if (score <= 150)  return { min: 5, max: 9 };
-  if (score <= 300)  return { min: 5, max: 12 };
-  if (score <= 500)  return { min: 5, max: 15 };
+  if (score <= 150)  return { min: 5, max: 8 };
+  if (score <= 300)  return { min: 5, max: 11 };
+  if (score <= 500)  return { min: 5, max: 14 };
   if (score <= 750)  return { min: 5, max: 17 };
   if (score <= 999)  return { min: 5, max: 20 };
   const extra = Math.floor((score - 1000) / 100) + 1;
   return { min: 5, max: 20 + extra };
 };
-
+   
 const generateCustomerRequest = (score) => {
   const { min, max } = getCustomerRequestRange(score);
   const range = max - min + 1;
@@ -198,8 +198,9 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
   const CELL_SIZE = Math.floor((appWidth - 40) / GRID_SIZE);
   
   const [board, setBoard] = useState(() => generateBoard(0, GRID_SIZE, generateCustomerRequest(0)));
+  const boardRef = useRef(null);
   const [selection, setSelection] = useState(null);
-  const [dragRect, setDragRect] = useState(null);
+  const dragSelection = useSharedValue(null);
   const [isDragging, setIsDragging] = useState(false);
   const [gameOver, setGameOver] = useState(false);
   const [score, setScore] = useState(0);
@@ -207,6 +208,7 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
   const [customerImgSeed, setCustomerImgSeed] = useState(() => Math.floor(Math.random() * 20));
   const [c5Condition, setC5Condition] = useState(null);
   const [showDelivery, setShowDelivery] = useState(false);
+  const timeLeftRef = useRef(START_TIME);
   const timeLeft = useSharedValue(START_TIME);
   const [showTimeBonus, setShowTimeBonus] = useState(null); // { amount: number }
   const [showScoreBonus, setShowScoreBonus] = useState(null); // { amount: number }
@@ -216,18 +218,22 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
   const [playerName, setPlayerName] = useState('');
   const prevLevelRef = useRef(1);
   const [chance, setChance] = useState(1);
-  const hintCells = useSharedValue(null); // { r1, c1, r2, c2 } or 'TRIGGER'
+  const hintCells = useSharedValue(null);
   const chanceUsedRef = useRef(false);
+  const gameOverFiredRef = useRef(false);
   const combosRef = useRef([]);
   const c5ConditionRef = useRef(c5Condition);
   c5ConditionRef.current = c5Condition;
-  const timeLeftRef = useRef(timeLeft);
-  timeLeftRef.current = timeLeft;
+  const scoreRef = useRef(score);
+  scoreRef.current = score;
+  const customerRequestRef = useRef(customerRequest);
+  customerRequestRef.current = customerRequest;
   const dragStartPos = useRef({ x: 0, y: 0 });
   const selectionRef = useRef(null);
   const deliveryTimeoutRef = useRef(null);
   const timerRef = useRef(null);
   const timeBonusTimeoutRef = useRef(null);
+  const lastTickTime = useRef(Date.now());
   
   // cellAnims 비활성화 - 243개 useSharedValue 제거
   const cellAnims = useRef(
@@ -244,6 +250,11 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
   const deliveryScale = useSharedValue(0);
   const deliveryY = useSharedValue(0);
   const hintShake = useSharedValue(0);
+  const cellShakeAnims = useMemo(() =>
+    Array.from({ length: GRID_SIZE }, () =>
+      Array.from({ length: GRID_SIZE }, () => new RNAnimated.Value(0))
+    )
+  , [GRID_SIZE]);
   const timerBarFlash = useSharedValue(0);
   const levelUpScale = useSharedValue(0);
   const levelUpOpacity = useSharedValue(0);
@@ -262,6 +273,7 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
   useEffect(() => {
     playStartSFX();
     startBGM();
+    loadRewardedAd();
     return () => { stopBGM(); };
   }, []);
 
@@ -284,9 +296,9 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
 
   // Timer
   useEffect(() => {
-    // 기존 interval 정리
+    // 기존 타이머 정리
     if (timerRef.current) {
-      clearInterval(timerRef.current);
+      clearTimeout(timerRef.current);
       timerRef.current = null;
     }
     
@@ -294,33 +306,40 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
       return;
     }
     
-    timerRef.current = setInterval(() => {
-      if (possibleCombinationsRef.current === 0) return;
-      timeLeft.value = Math.max(0, timeLeft.value - 0.2);
-      if (timeLeft.value <= 0.2) {
+    const tick = () => {
+      const now = Date.now();
+      const elapsed = (now - lastTickTime.current) / 1000;
+      const newVal = Math.max(0, timeLeftRef.current - elapsed);
+      timeLeftRef.current = newVal;
+      timeLeft.value = newVal;
+      if (newVal <= 0.05) {
+        if (gameOverFiredRef.current) return;
+        gameOverFiredRef.current = true;
+        timeLeftRef.current = 0;
         timeLeft.value = 0;
         setGameOver(true);
-        // 광고 표시 후 랭킹 등록 모달 표시
         showRewardedAdOrSkip().then(() => {
           setShowGameOverModal(true);
+          loadRewardedAd();
         });
+        return;
       }
-      if (timeLeft.value <= 5.1 && !chanceUsedRef.current) {
-        chanceUsedRef.current = true;
-        setChance(c => {
-          if (c > 0) {
-            // trigger hint via separate effect
-            hintCells.value = 'TRIGGER';
-            return 0;
-          }
-          return c;
-        });
+      if (possibleCombinationsRef.current !== 0) {
+        if (newVal <= 5.1 && !chanceUsedRef.current) {
+          chanceUsedRef.current = true;
+          setChance(c => (c > 0 ? 0 : c));
+          setHintTrigger(t => t + 1);
+        }
       }
-    }, 200);
+      lastTickTime.current = Date.now();
+      timerRef.current = setTimeout(tick, 200);
+    };
+    lastTickTime.current = Date.now();
+    timerRef.current = setTimeout(tick, 200);
     
     return () => {
       if (timerRef.current) {
-        clearInterval(timerRef.current);
+        clearTimeout(timerRef.current);
         timerRef.current = null;
       }
     };
@@ -328,11 +347,13 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
   
   const addTime = useCallback((bonusSeconds) => {
     const maxTime = getMaxTime();
-    const currentTime = timeLeft.value;
+    const currentTime = timeLeftRef.current;
     const overflowScore = (currentTime + bonusSeconds) > maxTime ? Math.floor((currentTime + bonusSeconds - maxTime) * 5) : 0;
     const actualBonus = Math.round(Math.min(bonusSeconds, maxTime - currentTime));
-    
-    timeLeft.value = Math.min(maxTime, currentTime + bonusSeconds);
+    const newTime = Math.min(maxTime, currentTime + bonusSeconds);
+    timeLeftRef.current = newTime;
+    timeLeft.value = newTime;
+    lastTickTime.current = Date.now();
     
     // Show time bonus text (actual amount added)
     setShowTimeBonus({ amount: actualBonus });
@@ -369,8 +390,9 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
     };
   }, []);
 
-  const calculateSum = (sel) => {
+  const calculateSum = (sel, b) => {
     if (!sel) return { sum: 0, minRow: 0, maxRow: 0, minCol: 0, maxCol: 0 };
+    const currentBoard = b || boardRef.current || board;
     const minRow = Math.min(sel.startRow, sel.endRow);
     const maxRow = Math.max(sel.startRow, sel.endRow);
     const minCol = Math.min(sel.startCol, sel.endCol);
@@ -378,15 +400,13 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
     let sum = 0;
     for (let r = minRow; r <= maxRow; r++) {
       for (let c = minCol; c <= maxCol; c++) {
-        if (board[r] && board[r][c] && !board[r][c].removed) {
-          sum += board[r][c].value;
+        if (currentBoard[r] && currentBoard[r][c] && !currentBoard[r][c].removed) {
+          sum += currentBoard[r][c].value;
         }
       }
     }
     return { sum, minRow, maxRow, minCol, maxCol };
   };
-  
-  const currentSum = useMemo(() => calculateSum(selection), [selection, board]);
   
   const [assistMode, setAssistMode] = useState(false);
   const assistTapCount = useRef(0);
@@ -405,72 +425,94 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
     }
   }, []);
 
-  // Hint effect: when hintCells === 'TRIGGER', shake cells in hint area
-  useEffect(() => {
-    if (hintCells.value !== 'TRIGGER') return;
-    if (combosRef.current.length === 0) { hintCells.value = null; return; }
-    const combo = combosRef.current[0];
-    hintCells.value = combo;
-    hintShake.value = withSequence(
-      withTiming(1, { duration: 80 }),
-      withTiming(-1, { duration: 80 }),
-      withTiming(1, { duration: 80 }),
-      withTiming(-1, { duration: 80 }),
-      withTiming(0, { duration: 80 }),
-      withDelay(1000, withSequence(
-        withTiming(1, { duration: 80 }),
-        withTiming(-1, { duration: 80 }),
-        withTiming(1, { duration: 80 }),
-        withTiming(-1, { duration: 80 }),
-        withTiming(0, { duration: 80 }, () => {
-          runOnJS(() => { hintCells.value = null; })();
-        })
-      ))
-    );
-  }, [hintCells.value]);
+  const [hintTrigger, setHintTrigger] = useState(0);
 
-  const combos = useMemo(() => {
-    const result = [];
-    for (let r1 = 0; r1 < GRID_SIZE; r1++) {
-      for (let c1 = 0; c1 < GRID_SIZE; c1++) {
-        for (let r2 = r1; r2 < GRID_SIZE; r2++) {
-          for (let c2 = c1; c2 < GRID_SIZE; c2++) {
-            let sum = 0;
-            let hasFruit = false;
-            let fruitCheckNeeded = !!c5Condition;
-            
-            for (let r = r1; r <= r2; r++) {
-              for (let c = c1; c <= c2; c++) {
-                if (!board[r][c].removed) {
-                  sum += board[r][c].value;
-                  if (fruitCheckNeeded && !hasFruit && board[r][c].fruit === c5Condition.fruit) {
-                    hasFruit = true;
+  const doHintShake = useCallback(() => {
+    if (!combosRef.current || combosRef.current.length === 0) return;
+    const combo = combosRef.current[0];
+    const anims = [];
+    for (let r = combo.r1; r <= combo.r2; r++) {
+      for (let c = combo.c1; c <= combo.c2; c++) {
+        if (cellShakeAnims[r] && cellShakeAnims[r][c]) {
+          anims.push(cellShakeAnims[r][c]);
+        }
+      }
+    }
+    const shakeSeq = (anim) => RNAnimated.sequence([
+      RNAnimated.timing(anim, { toValue: 6, duration: 60, useNativeDriver: true }),
+      RNAnimated.timing(anim, { toValue: -6, duration: 60, useNativeDriver: true }),
+      RNAnimated.timing(anim, { toValue: 6, duration: 60, useNativeDriver: true }),
+      RNAnimated.timing(anim, { toValue: -6, duration: 60, useNativeDriver: true }),
+      RNAnimated.timing(anim, { toValue: 0, duration: 60, useNativeDriver: true }),
+      RNAnimated.delay(800),
+      RNAnimated.timing(anim, { toValue: 6, duration: 60, useNativeDriver: true }),
+      RNAnimated.timing(anim, { toValue: -6, duration: 60, useNativeDriver: true }),
+      RNAnimated.timing(anim, { toValue: 6, duration: 60, useNativeDriver: true }),
+      RNAnimated.timing(anim, { toValue: -6, duration: 60, useNativeDriver: true }),
+      RNAnimated.timing(anim, { toValue: 0, duration: 60, useNativeDriver: true }),
+    ]);
+    anims.forEach(anim => { anim.setValue(0); shakeSeq(anim).start(); });
+  }, [cellShakeAnims]);
+
+  // Hint effect: hintTrigger 변경 시 shake 실행
+  useEffect(() => {
+    if (hintTrigger === 0) return;
+    if (combosRef.current && combosRef.current.length > 0) {
+      doHintShake();
+    } else {
+      // combos 계산 완료 대기 후 재시도
+      const t = setTimeout(() => doHintShake(), 300);
+      return () => clearTimeout(t);
+    }
+  }, [hintTrigger]);
+
+  const [combos, setCombos] = useState(null);
+  const possibleCombinationsRef = useRef(0);
+
+  useEffect(() => {
+    setCombos(null);
+    const timer = setTimeout(() => {
+      const result = [];
+      for (let r1 = 0; r1 < GRID_SIZE; r1++) {
+        for (let c1 = 0; c1 < GRID_SIZE; c1++) {
+          for (let r2 = r1; r2 < GRID_SIZE; r2++) {
+            for (let c2 = c1; c2 < GRID_SIZE; c2++) {
+              let sum = 0;
+              let hasFruit = false;
+              let fruitCheckNeeded = !!c5Condition;
+              for (let r = r1; r <= r2; r++) {
+                for (let c = c1; c <= c2; c++) {
+                  if (!board[r][c].removed) {
+                    sum += board[r][c].value;
+                    if (fruitCheckNeeded && !hasFruit && board[r][c].fruit === c5Condition.fruit) {
+                      hasFruit = true;
+                    }
                   }
                 }
               }
-            }
-            
-            const cellCount = (r2 - r1 + 1) * (c2 - c1 + 1);
-            if (sum === customerRequest && cellCount >= 2) {
-              if (c5Condition) {
-                const fruitOk = c5Condition.type === 'include' ? hasFruit : !hasFruit;
-                if (!fruitOk) continue;
+              const cellCount = (r2 - r1 + 1) * (c2 - c1 + 1);
+              if (sum === customerRequest && cellCount >= 2) {
+                if (c5Condition) {
+                  const fruitOk = c5Condition.type === 'include' ? hasFruit : !hasFruit;
+                  if (!fruitOk) continue;
+                }
+                result.push({ r1, c1, r2, c2 });
               }
-              result.push({ r1, c1, r2, c2 });
             }
           }
         }
       }
-    }
-    return result;
+      setCombos(result);
+      combosRef.current = result;
+      possibleCombinationsRef.current = result.length;
+    }, 0);
+    return () => clearTimeout(timer);
   }, [board, c5Condition, customerRequest, GRID_SIZE]);
 
-  combosRef.current = combos;
-  const possibleCombinations = combos.length;
-  const possibleCombinationsRef = useRef(possibleCombinations);
-  possibleCombinationsRef.current = possibleCombinations;
+  const possibleCombinations = combos === null ? -1 : combos.length;
 
   const assistCombos = useMemo(() => {
+    if (!combos) return [];
     const picked = [];
     const usedCells = new Set();
     for (const combo of combos) {
@@ -495,6 +537,7 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
   const resetBoard = useCallback(() => {
     const newBoard = generateBoard(score, GRID_SIZE, customerRequest);
     setBoard(newBoard);
+    timeLeftRef.current = START_TIME;
     timeLeft.value = START_TIME;
     for (let r = 0; r < GRID_SIZE; r++) {
       for (let c = 0; c < GRID_SIZE; c++) {
@@ -526,7 +569,7 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
     playDeliveryAnimation();
     playTradeSFX();
     const scoreBonus = addTime(timeBonus);
-    const newScore = score + points + scoreBonus;
+    const newScore = scoreRef.current + points + scoreBonus;
     
     for (let r = minRow; r <= maxRow; r++) {
       for (let c = minCol; c <= maxCol; c++) {
@@ -537,16 +580,15 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
     }
     
     setTimeout(() => {
+      // 상태 업데이트 일괄 처리
       setScore(newScore);
-      // Show combined score gain effect
       setShowScoreBonus({ amount: points + scoreBonus });
-      // Generate new customer request based on new score
       const newCustomerRequest = generateCustomerRequest(newScore);
       setCustomerRequest(newCustomerRequest);
-      const newSeed = Math.floor(Math.random() * 20);
-      setCustomerImgSeed(newSeed);
+      setCustomerImgSeed(Math.floor(Math.random() * 20));
+      setC5Condition(newCustomerRequest >= 21 ? generateC5Condition(null) : null);
       const newLevel = getLevel(newScore);
-      setC5Condition(newCustomerRequest >= 21 ? generateC5Condition(board) : null);
+      // 애니메이션
       customerSlideX.value = 200;
       customerSlideOpacity.value = 0;
       customerSlideX.value = withSpring(0, { damping: 18, stiffness: 120 });
@@ -557,7 +599,7 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
         prevLevelRef.current = newLevel;
         const { max: lvUpMax } = getCustomerRequestRange(newScore);
         setCustomerRequest(lvUpMax);
-        setC5Condition(lvUpMax >= 21 ? generateC5Condition(board) : null);
+        setC5Condition(lvUpMax >= 21 ? generateC5Condition(null) : null);
         setShowLevelUp(true);
         setChance(1);
         chanceUsedRef.current = false;
@@ -586,7 +628,7 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
         }
         
         // Gravity: move existing fruits down
-        const availableFruits = getAvailableFruits(score);
+        const availableFruits = getAvailableFruits(scoreRef.current);
         for (let c = minCol; c <= maxCol; c++) {
           const columnCells = [];
           for (let r = 0; r < GRID_SIZE; r++) {
@@ -635,7 +677,7 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
         }
       }, 50);
     }, 200);
-  }, [board, score, GRID_SIZE, CELL_SIZE]);
+  }, [GRID_SIZE, CELL_SIZE]);
 
   const getCellFromPos = (x, y) => {
     const col = Math.floor(x / (CELL_SIZE + CELL_MARGIN * 2));
@@ -669,12 +711,11 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
       endCol: cell.col,
     };
     selectionRef.current = newSelection;
-    setSelection(newSelection);
+    dragSelection.value = newSelection;
   }, [gameOver]);
 
   const onDragUpdate = useCallback((x, y) => {
     if (gameOver) return;
-    // 드래그 중에는 setDragRect 업데이트하지 않음 (리렌더링 방지)
     const startCell = getCellFromPos(dragStartPos.current.x, dragStartPos.current.y);
     const endCell = getCellFromPos(x, y);
     const newSelection = {
@@ -684,7 +725,7 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
       endCol: endCell.col,
     };
     selectionRef.current = newSelection;
-    setSelection(newSelection);
+    dragSelection.value = newSelection;
   }, [gameOver]);
 
   const onDragEnd = useCallback(() => {
@@ -693,17 +734,18 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
     selectionRef.current = null;
     setIsDragging(false);
     setSelection(null);
-    setDragRect(null);
+    dragSelection.value = null;
     if (currentSelection) {
       const { sum, minRow, maxRow, minCol, maxCol } = calculateSum(currentSelection);
-      if (sum === customerRequest) {
+      if (sum === customerRequestRef.current) {
         const cond = c5ConditionRef.current;
         let fruitOk = true;
         if (cond) {
           let hasFruit = false;
+          const b = boardRef.current || board;
           for (let r = minRow; r <= maxRow; r++) {
             for (let c = minCol; c <= maxCol; c++) {
-              if (!board[r][c].removed && board[r][c].fruit === cond.fruit) {
+              if (!b[r][c].removed && b[r][c].fruit === cond.fruit) {
                 hasFruit = true;
               }
             }
@@ -715,7 +757,7 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
         }
       }
     }
-  }, [removeApples, customerRequest, gameOver, board]);
+  }, [removeApples, gameOver]);
 
   const panGesture = Gesture.Pan()
     .minDistance(0)
@@ -725,7 +767,12 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
     .onFinalize(() => { runOnJS(onDragEnd)(); });
 
   useEffect(() => {
+    boardRef.current = board;
+  }, [board]);
+
+  useEffect(() => {
     const newBoard = generateBoard(0, GRID_SIZE, customerRequest);
+    boardRef.current = newBoard;
     setBoard(newBoard);
   }, [GRID_SIZE, customerRequest]);
 
@@ -745,8 +792,8 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
     ],
   }));
 
-  const theme = useMemo(() => getTheme(getLevel(score)), [score]);
   const level = useMemo(() => getLevel(score), [score]);
+  const theme = useMemo(() => getTheme(level), [level]);
 
   return (
     <>
@@ -761,15 +808,14 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
       {/* Score + Level Row */}
       <View style={{ alignItems: 'center' }}>
         <View style={styles.scoreRow}>
-          <View style={styles.levelBox}>
-            <Text style={styles.levelLabel}>LEVEL</Text>
-            <Text style={styles.levelValue}>{level >= 5 ? 'MAX' : level}</Text>
+          <View style={styles.statItem}>
+            <Text style={styles.statLabel}>LV</Text>
+            <Text style={[styles.statValue, { color: theme.blockFill }]}>{level >= 5 ? 'MAX' : level}</Text>
           </View>
-          <Pressable style={styles.scoreBox} onPress={handlePossibleTap}>
-            <Text style={styles.scoreLabel}>SCORE</Text>
-            <Text style={styles.scoreValue}>
-              {score}
-            </Text>
+          <View style={styles.statDivider} />
+          <Pressable style={styles.statItem} onPress={handlePossibleTap}>
+            <Text style={styles.statLabel}>SCORE</Text>
+            <Text style={[styles.statValue, styles.scoreValue]}>{score}</Text>
           </Pressable>
         </View>
         {showScoreBonus && (
@@ -854,27 +900,13 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
               }]}
             />
           ))}
-          {selection && isDragging && (() => {
-            const minRow = Math.min(selection.startRow, selection.endRow);
-            const maxRow = Math.max(selection.startRow, selection.endRow);
-            const minCol = Math.min(selection.startCol, selection.endCol);
-            const maxCol = Math.max(selection.startCol, selection.endCol);
-            const cellStep = CELL_SIZE + CELL_MARGIN * 2;
-            return (
-              <View pointerEvents="none" style={[styles.dragOverlay, {
-                left: minCol * cellStep,
-                top: minRow * cellStep,
-                width: (maxCol - minCol + 1) * cellStep - CELL_MARGIN * 2,
-                height: (maxRow - minRow + 1) * cellStep - CELL_MARGIN * 2,
-              }]}>
-                <View style={styles.sumBadgeWrapper}>
-                  <Text style={[styles.sumBadge, currentSum.sum === customerRequest && styles.sumBadgePerfect]}>
-                    {currentSum.sum}
-                  </Text>
-                </View>
-              </View>
-            );
-          })()}
+          <DragOverlay
+            dragSelection={dragSelection}
+            cellSize={CELL_SIZE}
+            cellMargin={CELL_MARGIN}
+            boardRef={boardRef}
+            customerRequestRef={customerRequestRef}
+          />
           {board.map((row, rowIndex) => (
             <View key={rowIndex} style={styles.row}>
               {row.map((cell, colIndex) => (
@@ -884,9 +916,8 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
                   rowIndex={rowIndex}
                   colIndex={colIndex}
                   anims={cellAnims[rowIndex][colIndex]}
-                  isSelected={isInSelection(rowIndex, colIndex)}
-                  hintCells={hintCells}
-                  hintShake={hintShake}
+                  isSelected={!isDragging && isInSelection(rowIndex, colIndex)}
+                  shakeAnim={cellShakeAnims[rowIndex][colIndex]}
                   cellSize={CELL_SIZE}
                   blockFill={theme.blockFill}
                   blockStroke={theme.blockStroke}
@@ -946,7 +977,7 @@ const TimerBar = React.memo(function TimerBar({ timeLeft, maxTime, flashValue, s
   }));
   
   const fillStyle = useAnimatedStyle(() => {
-    const progress = timeLeft.value / maxTime;
+    const progress = Math.max(0, Math.min(1, timeLeft.value / maxTime));
     const fillColor = timeLeft.value > 9 ? '#4CAF50' : timeLeft.value > 5 ? '#FF9800' : '#FF4444';
     return {
       width: `${progress * 100}%`,
@@ -984,7 +1015,7 @@ const timerStyles = StyleSheet.create({
     shadowOffset: { width: 0, height: 0 },
   },
   track: { flex: 1, height: 24, backgroundColor: '#E0E0E0', borderRadius: 12, overflow: 'hidden', position: 'relative' },
-  fill: { height: '100%', backgroundColor: '#4CAF50', borderRadius: 12, position: 'absolute', left: 0, top: 0 },
+  fill: { height: '100%', width: '100%', backgroundColor: '#4CAF50', borderRadius: 12, position: 'absolute', left: 0, top: 0 },
   timeOverlay: { 
     position: 'absolute',
     right: 10,
@@ -1007,55 +1038,107 @@ const timerStyles = StyleSheet.create({
   },
 });
 
-const Cell = React.memo(function Cell({ cell, anims, isSelected, cellSize, blockFill, blockStroke, hintCells, hintShake, rowIndex, colIndex }) {
-  const shakeStyle = useAnimatedStyle(() => {
-    const hint = hintCells.value;
-    const isInHint = hint && hint !== 'TRIGGER' &&
-      rowIndex >= hint.r1 && rowIndex <= hint.r2 &&
-      colIndex >= hint.c1 && colIndex <= hint.c2;
+const DragOverlay = React.memo(function DragOverlay({ dragSelection, cellSize, cellMargin, boardRef, customerRequestRef }) {
+  const cellStep = cellSize + cellMargin * 2;
+
+  const overlayStyle = useAnimatedStyle(() => {
+    const sel = dragSelection.value;
+    if (!sel) return { display: 'none' };
+    const minRow = Math.min(sel.startRow, sel.endRow);
+    const maxRow = Math.max(sel.startRow, sel.endRow);
+    const minCol = Math.min(sel.startCol, sel.endCol);
+    const maxCol = Math.max(sel.startCol, sel.endCol);
     return {
-      transform: [{ translateX: isInHint ? hintShake.value * 4 : 0 }],
+      display: 'flex',
+      position: 'absolute',
+      left: minCol * cellStep,
+      top: minRow * cellStep,
+      width: (maxCol - minCol + 1) * cellStep - cellMargin * 2,
+      height: (maxRow - minRow + 1) * cellStep - cellMargin * 2,
     };
   });
 
+  const [sumText, setSumText] = useState('');
+  const [isPerfect, setIsPerfect] = useState(false);
+
+  const updateSum = useCallback((sel) => {
+    if (!sel) { setSumText(''); setIsPerfect(false); return; }
+    const b = boardRef.current;
+    if (!b) return;
+    const minRow = Math.min(sel.startRow, sel.endRow);
+    const maxRow = Math.max(sel.startRow, sel.endRow);
+    const minCol = Math.min(sel.startCol, sel.endCol);
+    const maxCol = Math.max(sel.startCol, sel.endCol);
+    let sum = 0;
+    for (let r = minRow; r <= maxRow; r++) {
+      for (let c = minCol; c <= maxCol; c++) {
+        if (b[r] && b[r][c] && !b[r][c].removed) {
+          sum += b[r][c].value;
+        }
+      }
+    }
+    setSumText(String(sum));
+    setIsPerfect(sum === customerRequestRef.current);
+  }, []);
+
+  useAnimatedReaction(
+    () => dragSelection.value,
+    (sel) => {
+      runOnJS(updateSum)(sel);
+    }
+  );
+
+  return (
+    <Animated.View pointerEvents="none" style={[styles.dragOverlay, overlayStyle]}>
+      <View style={styles.sumBadgeWrapper}>
+        <Text style={[styles.sumBadge, isPerfect && styles.sumBadgePerfect]}>
+          {sumText}
+        </Text>
+      </View>
+    </Animated.View>
+  );
+});
+
+const Cell = React.memo(function Cell({ cell, anims, isSelected, shakeAnim, cellSize, blockFill, blockStroke, rowIndex, colIndex }) {
   const appleFontSize = Math.floor(cellSize * 0.55);
   const numberFontSize = Math.floor(cellSize * 0.40);
 
   return (
-    <Animated.View style={[
+    <RNAnimated.View style={[
       styles.cellContainer,
       { width: cellSize, height: cellSize },
-      shakeStyle,
-      isSelected && { transform: [{ scale: 0.95 }] }
+      { transform: [{ translateX: shakeAnim }, ...(isSelected ? [{ scale: 0.95 }] : [])] },
     ]}>
       {cell.value > 0 && (
         <>
-          <FruitBlock 
-            size={cellSize} 
-            fruit={cell.fruit || FRUITS[0]} 
+          <FruitBlock
+            size={cellSize}
+            fruit={cell.fruit || FRUITS[0]}
             selected={isSelected}
             style={styles.cellBackground}
             blockFill={blockFill}
             blockStroke={blockStroke}
           />
           <View style={styles.cellContent}>
-            <Image 
-              source={FRUIT_IMAGES[cell.fruit] || FRUIT_IMAGES.apple} 
-              style={{ width: appleFontSize * 1.2, height: appleFontSize * 1.2 }} 
-              resizeMode="contain" 
+            <Image
+              source={FRUIT_IMAGES[cell.fruit] || FRUIT_IMAGES.apple}
+              style={{ width: appleFontSize * 1.2, height: appleFontSize * 1.2 }}
+              resizeMode="contain"
             />
             <Text style={[styles.number, { fontSize: numberFontSize, lineHeight: numberFontSize * 1.2 }]}>{cell.value}</Text>
           </View>
         </>
       )}
-    </Animated.View>
+    </RNAnimated.View>
   );
 }, (prevProps, nextProps) => {
   return prevProps.cell.value === nextProps.cell.value &&
          prevProps.cell.fruit === nextProps.cell.fruit &&
          prevProps.cell.removed === nextProps.cell.removed &&
          prevProps.isSelected === nextProps.isSelected &&
-         prevProps.cellSize === nextProps.cellSize;
+         prevProps.cellSize === nextProps.cellSize &&
+         prevProps.blockFill === nextProps.blockFill &&
+         prevProps.blockStroke === nextProps.blockStroke;
 });
 
 const styles = StyleSheet.create({
@@ -1071,13 +1154,43 @@ const styles = StyleSheet.create({
   levelUpBannerText: { fontSize: 16, fontWeight: '900', color: '#FFF', letterSpacing: 1 },
 
   // Score Box
-  scoreRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 6 },
-  scoreBox: { backgroundColor: '#FFF', paddingHorizontal: 20, paddingVertical: 10, borderRadius: 10, alignItems: 'center', minWidth: 80, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 3 },
-  levelBox: { backgroundColor: '#FFF', paddingHorizontal: 16, paddingVertical: 10, borderRadius: 10, alignItems: 'center', minWidth: 70, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 3 },
-  levelLabel: { fontSize: 12, color: '#8B7355', fontWeight: '600', marginBottom: 4 },
-  levelValue: { fontSize: 32, fontWeight: '900', color: '#FF8C42' },
-  scoreLabel: { fontSize: 12, color: '#8B7355', fontWeight: '600', marginBottom: 4 },
-  scoreValue: { fontSize: 32, fontWeight: '900', color: '#FF8C42' },
+  scoreRow: { 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    backgroundColor: '#FFF',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 16,
+    marginBottom: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    elevation: 3,
+  },
+  statItem: { 
+    alignItems: 'center',
+    paddingHorizontal: 12,
+  },
+  statDivider: {
+    width: 1,
+    height: 32,
+    backgroundColor: '#E8E8E8',
+    marginHorizontal: 8,
+  },
+  statLabel: { 
+    fontSize: 10, 
+    color: '#999', 
+    fontWeight: '600',
+    letterSpacing: 0.5,
+    marginBottom: 4,
+  },
+  statValue: { 
+    fontSize: 28, 
+    fontWeight: '900',
+  },
+  levelValue: { color: '#FF8C42' },
+  scoreValue: { color: '#FF4444' },
   scoreBonusText: {
     position: 'absolute',
     top: 70,

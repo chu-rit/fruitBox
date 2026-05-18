@@ -7,6 +7,7 @@ buildscript {
         compileSdkVersion = Integer.parseInt(findProperty('android.compileSdkVersion') ?: '34')
         targetSdkVersion = Integer.parseInt(findProperty('android.targetSdkVersion') ?: '34')
         kotlinVersion = findProperty('android.kotlinVersion') ?: '1.9.23'
+        googleMobileAdsVersion = "23.0.0"
 
         ndkVersion = "26.1.10909125"
     }
@@ -18,10 +19,20 @@ buildscript {
         classpath('com.android.tools.build:gradle')
         classpath('com.facebook.react:react-native-gradle-plugin')
         classpath('org.jetbrains.kotlin:kotlin-gradle-plugin')
+        classpath('com.google.gms:google-services:4.4.2')
     }
 }
 
 apply plugin: "com.facebook.react.rootproject"
+
+// react-native-google-mobile-ads configuration
+rootProject.ext.googleMobileAdsJson = [
+  getStringValue: { key, defaultVal ->
+    if (key == "android_app_id") return "ca-app-pub-3940256099942544~3347511713"
+    return defaultVal
+  },
+  isFlagEnabled: { key, defaultVal -> return defaultVal }
+]
 
 allprojects {
     repositories {

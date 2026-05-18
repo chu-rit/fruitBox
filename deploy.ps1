@@ -53,7 +53,6 @@ $manifest = @{
 
 # Generate sw.js
 Write-Host "Generating sw.js..." -ForegroundColor Cyan
-$jsBundle = (Get-ChildItem "docs\_expo\static\js\web\AppEntry-*.js" | Select-Object -First 1).Name
 $sw = @"
 const CACHE_NAME = 'fruitbox-v1';
 const STATIC_ASSETS = ['/fruitBox/', '/fruitBox/index.html', '/fruitBox/manifest.json'];

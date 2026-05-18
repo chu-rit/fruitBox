@@ -1,25 +1,32 @@
 import { Platform } from 'react-native';
 import Constants from 'expo-constants';
 
-// Expo Go인지 확인
 const isExpoGo = Constants.appOwnership === 'expo';
 
-// 플랫폼별 조건부 import
-let RewardedAd, RewardedAdEventType, TestIds;
+let RewardedAd, RewardedAdEventType, AdEventType, TestIds, MobileAds;
 
 if (Platform.OS !== 'web' && !isExpoGo) {
   try {
     const ads = require('react-native-google-mobile-ads');
     RewardedAd = ads.RewardedAd;
     RewardedAdEventType = ads.RewardedAdEventType;
+    AdEventType = ads.AdEventType;
     TestIds = ads.TestIds;
+    MobileAds = ads.default;
+    console.log('[AdService] package loaded, TestIds:', JSON.stringify(TestIds));
+    MobileAds().setRequestConfiguration({
+      testDeviceIdentifiers: ['EMULATOR'],
+    }).catch(() => {});
+    MobileAds().initialize()
+      .then(() => console.log('[AdService] MobileAds initialized'))
+      .catch(e => console.log('[AdService] MobileAds init error:', e));
   } catch (e) {
-    // 패키지가 없으면 스킵
-    console.log('react-native-google-mobile-ads not installed');
+    console.log('[AdService] require error:', e);
   }
+} else {
+  console.log('[AdService] skipped - web or ExpoGo, OS:', Platform.OS, 'isExpoGo:', isExpoGo);
 }
 
-// 테스트용 광고 단위 ID
 const REWARDED_AD_UNIT_ID = Platform.OS !== 'web' && TestIds ? Platform.select({
   android: TestIds.REWARDED,
   ios: TestIds.REWARDED,
@@ -30,75 +37,67 @@ let isAdLoaded = false;
 let isAdLoading = false;
 
 export const loadRewardedAd = () => {
-  if (Platform.OS === 'web' || isExpoGo) {
-    // 웹이나 Expo Go에서는 광고 로드 안 함
+  console.log('[AdService] loadRewardedAd called, RewardedAd:', !!RewardedAd, 'isExpoGo:', isExpoGo, 'OS:', Platform.OS);
+  if (Platform.OS === 'web' || isExpoGo || !RewardedAd) {
     return Promise.resolve({ success: true, skipped: true });
   }
-
   return new Promise((resolve) => {
     if (isAdLoaded || isAdLoading) {
+      console.log('[AdService] already loaded/loading:', isAdLoaded, isAdLoading);
       resolve({ success: isAdLoaded, skipped: false });
       return;
     }
-
     isAdLoading = true;
+    console.log('[AdService] creating ad request, unitId:', REWARDED_AD_UNIT_ID);
     rewardedAd = RewardedAd.createForAdRequest(REWARDED_AD_UNIT_ID, {
       requestNonPersonalizedAdsOnly: true,
     });
-
-    const unsubscribe = rewardedAd.addAdEventListener(RewardedAdEventType.LOADED, () => {
+    const unsubLoaded = rewardedAd.addAdEventListener(RewardedAdEventType.LOADED, () => {
+      console.log('[AdService] ad LOADED');
       isAdLoaded = true;
       isAdLoading = false;
-      unsubscribe();
+      unsubLoaded();
       resolve({ success: true, skipped: false });
     });
-
-    rewardedAd.addAdEventListener(RewardedAdEventType.FAILED_TO_LOAD, () => {
+    rewardedAd.addAdEventListener(AdEventType.ERROR, (e) => {
+      console.log('[AdService] ad ERROR:', e);
       isAdLoaded = false;
       isAdLoading = false;
-      unsubscribe();
-      resolve({ success: false, skipped: false });
+      resolve({ success: false, skipped: true });
     });
-
     rewardedAd.load();
   });
 };
 
 export const showRewardedAd = () => {
   return new Promise((resolve) => {
-    if (Platform.OS === 'web' || isExpoGo) {
-      // 웹이나 Expo Go에서는 광고 스킵
+    if (Platform.OS === 'web' || isExpoGo || !RewardedAd || !isAdLoaded) {
       resolve({ success: true, skipped: true });
       return;
     }
-
-    if (!isAdLoaded) {
-      resolve({ success: false, skipped: false });
-      return;
-    }
-
-    const unsubscribe = rewardedAd.addAdEventListener(RewardedAdEventType.EARNED_REWARD, () => {
-      unsubscribe();
-      resolve({ success: true, skipped: false });
+    const unsubEarned = rewardedAd.addAdEventListener(RewardedAdEventType.EARNED_REWARD, () => {
+      unsubEarned();
     });
-
-    rewardedAd.addAdEventListener(RewardedAdEventType.CLOSED, () => {
+    const unsubClosed = rewardedAd.addAdEventListener(AdEventType.CLOSED, () => {
+      console.log('[AdService] ad CLOSED');
       isAdLoaded = false;
-      unsubscribe();
+      unsubEarned();
+      unsubClosed();
       resolve({ success: true, skipped: false });
     });
-
-    rewardedAd.show();
+    console.log('[AdService] ad show()');
+    try {
+      rewardedAd.show();
+    } catch (e) {
+      console.log('[AdService] show() error:', e);
+      resolve({ success: true, skipped: true });
+    }
   });
 };
 
 export const showRewardedAdOrSkip = async () => {
-  if (Platform.OS === 'web' || isExpoGo) {
-    // 웹이나 Expo Go에서는 바로 스킵
+  if (Platform.OS === 'web' || isExpoGo || !RewardedAd) {
     return { success: true, skipped: true };
   }
-
-  // 네이티브에서는 광고 표시 시도
-  await loadRewardedAd();
   return await showRewardedAd();
 };

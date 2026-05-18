@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "488925576174",
+    "project_id": "fruitbox-4319c",
+    "storage_bucket": "fruitbox-4319c.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:488925576174:android:000000000000000",
+        "android_client_info": {
+          "package_name": "com.churit.fruitbox"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": ""
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
