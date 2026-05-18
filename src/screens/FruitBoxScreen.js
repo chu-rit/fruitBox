@@ -235,13 +235,12 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
   const timeBonusTimeoutRef = useRef(null);
   const lastTickTime = useRef(Date.now());
   
-  // cellAnims 비활성화 - 243개 useSharedValue 제거
   const cellAnims = useRef(
     Array(GRID_SIZE).fill(null).map(() =>
       Array(GRID_SIZE).fill(null).map(() => ({
-        opacity: { value: 1 },
-        scale: { value: 1 },
-        translateY: { value: 0 },
+        opacity: new RNAnimated.Value(1),
+        scale: new RNAnimated.Value(1),
+        translateYAnim: new RNAnimated.Value(0),
       }))
     )
   ).current;
@@ -541,8 +540,9 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
     timeLeft.value = START_TIME;
     for (let r = 0; r < GRID_SIZE; r++) {
       for (let c = 0; c < GRID_SIZE; c++) {
-        cellAnims[r][c].opacity.value = 1;
-        cellAnims[r][c].scale.value = 1;
+        cellAnims[r][c].opacity.setValue(1);
+        cellAnims[r][c].scale.setValue(1);
+        cellAnims[r][c].translateYAnim.setValue(0);
       }
     }
   }, [score, customerRequest, GRID_SIZE]);
@@ -574,8 +574,8 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
     for (let r = minRow; r <= maxRow; r++) {
       for (let c = minCol; c <= maxCol; c++) {
         const anims = cellAnims[r][c];
-        anims.opacity.value = 0;
-        anims.scale.value = 0.8;
+        RNAnimated.timing(anims.opacity, { toValue: 0, duration: 150, useNativeDriver: true }).start();
+        RNAnimated.timing(anims.scale, { toValue: 0.8, duration: 150, useNativeDriver: true }).start();
       }
     }
     
@@ -618,6 +618,7 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
         setShowScoreBonus(null);
       }, 1000);
       
+      const fallTargets = [];
       setBoard(prev => {
         const newBoard = prev.map(row => row.map(cell => ({ ...cell })));
         
@@ -629,6 +630,7 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
         
         // Gravity: move existing fruits down
         const availableFruits = getAvailableFruits(scoreRef.current);
+        fallTargets.length = 0;
         for (let c = minCol; c <= maxCol; c++) {
           const columnCells = [];
           for (let r = 0; r < GRID_SIZE; r++) {
@@ -640,12 +642,9 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
           for (let i = columnCells.length - 1; i >= 0; i--) {
             const { cell, originalRow } = columnCells[i];
             newBoard[writeRow][c] = cell;
-            // Animate fall: start from original position
             if (writeRow !== originalRow) {
               const fallDist = (writeRow - originalRow) * (CELL_SIZE + CELL_MARGIN * 2);
-              const anims = cellAnims[writeRow][c];
-              anims.translateY.value = -fallDist;
-              anims.opacity.value = 1;
+              fallTargets.push({ r: writeRow, c, startY: -fallDist });
             }
             writeRow--;
           }
@@ -656,10 +655,7 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
               removed: false 
             };
             const dropDist = (writeRow + 1) * (CELL_SIZE + CELL_MARGIN * 2);
-            const anims = cellAnims[r][c];
-            anims.opacity.value = 1;
-            anims.scale.value = 1;
-            anims.translateY.value = -dropDist;
+            fallTargets.push({ r, c, startY: -dropDist });
           }
         }
         
@@ -667,15 +663,19 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
       });
       
       setTimeout(() => {
-        for (let c = minCol; c <= maxCol; c++) {
-          for (let r = 0; r < GRID_SIZE; r++) {
-            const anims = cellAnims[r][c];
-            anims.translateY.value = 0;
-            anims.opacity.value = 1;
-            anims.scale.value = 1;
-          }
-        }
-      }, 50);
+        fallTargets.forEach(({ r, c, startY }) => {
+          const anims = cellAnims[r][c];
+          anims.opacity.setValue(1);
+          anims.scale.setValue(1);
+          anims.translateYAnim.setValue(startY);
+          RNAnimated.spring(anims.translateYAnim, {
+            toValue: 0,
+            damping: 18,
+            stiffness: 200,
+            useNativeDriver: true,
+          }).start();
+        });
+      }, 30);
     }, 200);
   }, [GRID_SIZE, CELL_SIZE]);
 
@@ -771,10 +771,10 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
   }, [board]);
 
   useEffect(() => {
-    const newBoard = generateBoard(0, GRID_SIZE, customerRequest);
+    const newBoard = generateBoard(0, GRID_SIZE, generateCustomerRequest(0));
     boardRef.current = newBoard;
     setBoard(newBoard);
-  }, [GRID_SIZE, customerRequest]);
+  }, [GRID_SIZE]);
 
   // Initial customer slide-in on mount
   useEffect(() => {
@@ -1102,12 +1102,20 @@ const DragOverlay = React.memo(function DragOverlay({ dragSelection, cellSize, c
 const Cell = React.memo(function Cell({ cell, anims, isSelected, shakeAnim, cellSize, blockFill, blockStroke, rowIndex, colIndex }) {
   const appleFontSize = Math.floor(cellSize * 0.55);
   const numberFontSize = Math.floor(cellSize * 0.40);
+  const translateY = anims?.translateYAnim || null;
+  const opacity = anims?.opacity || null;
+  const scale = anims?.scale || null;
 
   return (
     <RNAnimated.View style={[
       styles.cellContainer,
       { width: cellSize, height: cellSize },
-      { transform: [{ translateX: shakeAnim }, ...(isSelected ? [{ scale: 0.95 }] : [])] },
+      opacity ? { opacity } : null,
+      { transform: [
+        { translateX: shakeAnim },
+        ...(translateY ? [{ translateY }] : []),
+        ...(scale ? [{ scale }] : isSelected ? [{ scale: 0.95 }] : []),
+      ]},
     ]}>
       {cell.value > 0 && (
         <>
