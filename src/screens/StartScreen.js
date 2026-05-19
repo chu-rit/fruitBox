@@ -106,6 +106,13 @@ export default function StartScreen({ onStart, onSettings, onRanking, onLogoPres
         <TouchableOpacity style={styles.modalOverlay} activeOpacity={1} onPress={() => setShowCredits(false)}>
           <View style={styles.modalBox}>
             <Text style={styles.modalTitle}>Credits</Text>
+            <Text style={styles.modalBody}>Created by ChuRit</Text>
+            <Text
+              style={styles.modalLink}
+              onPress={() => Linking.openURL('https://chu-rit.github.io/')}
+            >
+              chu-rit.github.io
+            </Text>
             <Text style={styles.modalBody}>Music by Clement Panchout</Text>
             <Text
               style={styles.modalLink}

@@ -1,4 +1,5 @@
 ﻿import React, { useState, useRef, useCallback, useEffect, useMemo } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   View,
   Text,
@@ -10,6 +11,8 @@ import {
   TextInput,
   Modal,
   Animated as RNAnimated,
+  TouchableOpacity,
+  ScrollView,
 } from 'react-native';
 import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
 import Animated, {
@@ -215,6 +218,8 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
   const [showLevelUp, setShowLevelUp] = useState(false);
   const [paused, setPaused] = useState(false);
   const [showGameOverModal, setShowGameOverModal] = useState(false);
+  const [showTutorial, setShowTutorial] = useState(false); // Will check AsyncStorage
+  const [tutorialStep, setTutorialStep] = useState(0);
   const [playerName, setPlayerName] = useState('');
   const prevLevelRef = useRef(1);
   const [chance, setChance] = useState(1);
@@ -292,6 +297,16 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
       pauseBGM();
     }
   }, [paused, gameOver]);
+
+  // Check if first run
+  useEffect(() => {
+    AsyncStorage.getItem('tutorialSeen').then(seen => {
+      if (seen !== 'true') {
+        setShowTutorial(true);
+        setPaused(true);
+      }
+    });
+  }, []);
 
   // Timer
   useEffect(() => {
@@ -802,7 +817,13 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
         <Pressable style={styles.backBtn} onPress={onBackToStart}>
           <Image source={require('../assets/img/back_arrow.png')} style={{ width: 24, height: 24 }} resizeMode="contain" />
         </Pressable>
-        {/* <TouchableOpacity style={styles.resetBtn} onPress={() => setPaused(p => !p)}><Text style={styles.resetIcon}>{paused ? '▶' : '⏸'}</Text></TouchableOpacity> */}
+{/* <TouchableOpacity style={styles.resetBtn} onPress={() => setPaused(p => !p)}><Text style={styles.resetIcon}>{paused ? '▶' : '⏸'}</Text></TouchableOpacity> */}
+        <TouchableOpacity 
+          style={styles.helpBtn} 
+          onPress={() => { setPaused(true); setShowTutorial(true); setTutorialStep(0); }}
+        >
+          <Text style={styles.helpIcon}>?</Text>
+        </TouchableOpacity>
       </View>
 
       {/* Score + Level Row */}
@@ -951,6 +972,103 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
           <Pressable style={styles.modalSkipButton} onPress={() => { setShowGameOverModal(false); setPlayerName(''); }}>
             <Text style={styles.modalSkipButtonText}>Skip</Text>
           </Pressable>
+        </View>
+      </View>
+    </Modal>
+
+    {/* Tutorial Modal */}
+    <Modal transparent visible={showTutorial} animationType="fade">
+      <View style={styles.tutorialOverlay}>
+        <View style={styles.tutorialBox}>
+          <Text style={styles.tutorialTitle}>🎮 How to Play</Text>
+          <View style={styles.tutorialContent}>
+            {tutorialStep === 0 && (
+              <View style={styles.tutorialStepContent}>
+                <Image 
+                  source={require('../assets/img/T1.jpg')} 
+                  style={styles.tutorialImage} 
+                  resizeMode="contain"
+                />
+                <Text style={styles.tutorialBold}>Check the number the customer calls out.</Text>
+              </View>
+            )}
+            {tutorialStep === 1 && (
+              <View style={styles.tutorialStepContent}>
+                <Image 
+                  source={require('../assets/img/T2.jpg')} 
+                  style={styles.tutorialImage} 
+                  resizeMode="contain"
+                />
+                <Text style={styles.tutorialBold}>Select the appropriate numbers from the fruit blocks.</Text>
+              </View>
+            )}
+            {tutorialStep === 2 && (
+              <View style={styles.tutorialStepContent}>
+                <Image 
+                  source={require('../assets/img/T3.jpg')} 
+                  style={styles.tutorialImage} 
+                  resizeMode="contain"
+                />
+                <Text style={styles.tutorialBold}>Drag to match the sum with the number the customer called out.</Text>
+              </View>
+            )}
+            {tutorialStep === 3 && (
+              <View style={styles.tutorialStepContent}>
+                <Image 
+                  source={require('../assets/img/S2.png')} 
+                  style={styles.tutorialImage} 
+                  resizeMode="contain"
+                />
+                <Text style={styles.tutorialBold}>Release your finger when the numbers match to complete the delivery.</Text>
+              </View>
+            )}
+          </View>
+
+          {/* Dot Indicator */}
+          <View style={styles.tutorialDots}>
+            {[0, 1, 2, 3].map((i) => (
+              <View
+                key={i}
+                style={[
+                  styles.tutorialDot,
+                  tutorialStep === i && styles.tutorialDotActive,
+                ]}
+              />
+            ))}
+          </View>
+
+          {/* Navigation Buttons */}
+          <View style={styles.tutorialNav}>
+            {tutorialStep > 0 ? (
+              <TouchableOpacity
+                style={styles.tutorialNavButton}
+                onPress={() => setTutorialStep(tutorialStep - 1)}
+              >
+                <Text style={styles.tutorialNavButtonText}>◀ 이전</Text>
+              </TouchableOpacity>
+            ) : <View style={styles.tutorialNavPlaceholder} />}
+
+            {tutorialStep < 3 ? (
+              <TouchableOpacity
+                style={styles.tutorialNavButtonPrimary}
+                onPress={() => setTutorialStep(tutorialStep + 1)}
+              >
+                <Text style={styles.tutorialNavButtonText}>NEXT ▶</Text>
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity
+                style={styles.tutorialStartButton}
+                onPress={() => {
+                  setShowTutorial(false);
+                  setPaused(false);
+                  lastTickTime.current = Date.now();
+                  AsyncStorage.setItem('tutorialSeen', 'true');
+                }}
+              >
+                <Text style={styles.tutorialStartButtonText}>▶  START</Text>
+              </TouchableOpacity>
+            )}
+          </View>
         </View>
       </View>
     </Modal>
@@ -1156,6 +1274,8 @@ const styles = StyleSheet.create({
   title: { fontSize: 24, fontWeight: '900', color: '#FF8C42', letterSpacing: 2 },
   resetBtn: { width: 44, height: 44, backgroundColor: '#4CAF50', borderRadius: 22, justifyContent: 'center', alignItems: 'center', shadowColor: '#388E3C', shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.4, shadowRadius: 6, elevation: 6, borderWidth: 2, borderColor: '#81C784' },
   resetIcon: { color: '#FFF', fontSize: 22, fontWeight: 'bold', includeFontPadding: false, textAlign: 'center', textAlignVertical: 'center', marginTop: -2 },
+  helpBtn: { width: 40, height: 40, backgroundColor: '#FF8C42', borderRadius: 20, justifyContent: 'center', alignItems: 'center', shadowColor: '#FF8C42', shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.4, shadowRadius: 6, elevation: 6, borderWidth: 2, borderColor: '#FFB74D' },
+  helpIcon: { color: '#FFF', fontSize: 20, fontWeight: 'bold' },
   
   // Level Up Overlay
   levelUpBanner: { position: 'absolute', top: 60, alignSelf: 'center', zIndex: 200, backgroundColor: '#FF8C42', borderRadius: 20, paddingHorizontal: 20, paddingVertical: 8 },
@@ -1419,5 +1539,130 @@ const styles = StyleSheet.create({
     textShadowColor: 'rgba(0,0,0,0.8)',
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 6,
+  },
+
+  // Tutorial Styles
+  tutorialOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  tutorialBox: {
+    backgroundColor: '#FFF8E7',
+    borderRadius: 24,
+    padding: 24,
+    width: '85%',
+    maxWidth: 360,
+    alignItems: 'center',
+    shadowColor: '#FF8C42',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 10,
+  },
+  tutorialTitle: {
+    fontSize: 24,
+    fontWeight: '900',
+    color: '#FF8C42',
+    marginBottom: 20,
+  },
+  tutorialContent: {
+    width: '100%',
+    minHeight: 180,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  tutorialStepContent: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+  },
+  tutorialImage: {
+    width: 200,
+    height: 120,
+    borderRadius: 12,
+    marginVertical: 12,
+  },
+  tutorialDesc: {
+    fontSize: 14,
+    color: '#5C4A2A',
+    textAlign: 'center',
+  },
+  tutorialText: {
+    fontSize: 15,
+    color: '#5C4A2A',
+    lineHeight: 24,
+    textAlign: 'center',
+  },
+  tutorialBold: {
+    fontWeight: '800',
+    color: '#FF8C42',
+    fontSize: 17,
+  },
+  tutorialEmoji: {
+    fontSize: 40,
+  },
+  tutorialTip: {
+    fontWeight: '700',
+    color: '#4CAF50',
+    fontSize: 14,
+  },
+  tutorialDots: {
+    flexDirection: 'row',
+    gap: 8,
+    marginVertical: 20,
+  },
+  tutorialDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#DDD',
+  },
+  tutorialDotActive: {
+    backgroundColor: '#FF8C42',
+    width: 20,
+  },
+  tutorialNav: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    width: '100%',
+    paddingHorizontal: 8,
+  },
+  tutorialNavButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+  },
+  tutorialNavButtonPrimary: {
+    backgroundColor: '#FF8C42',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+  },
+  tutorialNavButtonText: {
+    color: '#FFF',
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  tutorialNavPlaceholder: {
+    width: 60,
+  },
+  tutorialStartButton: {
+    backgroundColor: '#FF8C42',
+    paddingVertical: 12,
+    paddingHorizontal: 32,
+    borderRadius: 16,
+    shadowColor: '#FF8C42',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.35,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  tutorialStartButtonText: {
+    color: '#FFF',
+    fontSize: 16,
+    fontWeight: '800',
+    letterSpacing: 1,
   },
 });
