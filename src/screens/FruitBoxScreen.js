@@ -57,10 +57,10 @@ const customerImgs = {
 };
 
 const getCustomerImg = (request, seed) => {
-  if (request >= 21) return customerImgs.c5;
-  if (request >= 16) return customerImgs.c3;
-  if (request >= 10) return customerImgs.c1;
-  return seed % 2 === 0 ? customerImgs.c2 : customerImgs.c4;
+  if (request >= 21) return { img: customerImgs.c5 };
+  if (request >= 16) return { img: customerImgs.c3, isC3: true };
+  if (request >= 10) return { img: customerImgs.c1 };
+  return { img: seed % 2 === 0 ? customerImgs.c2 : customerImgs.c4 };
 };
 
 const { width } = Dimensions.get('window');
@@ -525,6 +525,13 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
 
   const possibleCombinations = combos === null ? -1 : combos.length;
 
+  // Pause when no combinations
+  useEffect(() => {
+    if (possibleCombinations === 0 && !gameOver) {
+      setPaused(true);
+    }
+  }, [possibleCombinations, gameOver]);
+
   const assistCombos = useMemo(() => {
     if (!combos) return [];
     const picked = [];
@@ -606,7 +613,7 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
       // 애니메이션
       customerSlideX.value = 200;
       customerSlideOpacity.value = 0;
-      customerSlideX.value = withSpring(0, { damping: 18, stiffness: 120 });
+      customerSlideX.value = withSpring(0, { damping: 25, stiffness: 80 });
       customerSlideOpacity.value = withTiming(1, { duration: 200 });
       scoreScale.value = withSpring(1.15, { damping: 12 });
       // Level up check
@@ -795,7 +802,7 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
   useEffect(() => {
     customerSlideX.value = 200;
     customerSlideOpacity.value = 0;
-    customerSlideX.value = withSpring(0, { damping: 18, stiffness: 120 });
+    customerSlideX.value = withSpring(0, { damping: 25, stiffness: 80 });
     customerSlideOpacity.value = withTiming(1, { duration: 200 });
   }, []);
 
@@ -817,13 +824,15 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
         <Pressable style={styles.backBtn} onPress={onBackToStart}>
           <Image source={require('../assets/img/back_arrow.png')} style={{ width: 24, height: 24 }} resizeMode="contain" />
         </Pressable>
-{/* <TouchableOpacity style={styles.resetBtn} onPress={() => setPaused(p => !p)}><Text style={styles.resetIcon}>{paused ? '▶' : '⏸'}</Text></TouchableOpacity> */}
-        <TouchableOpacity 
-          style={styles.helpBtn} 
-          onPress={() => { setPaused(true); setShowTutorial(true); setTutorialStep(0); }}
-        >
-          <Text style={styles.helpIcon}>?</Text>
-        </TouchableOpacity>
+<View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+          <TouchableOpacity style={styles.resetBtn} onPress={() => setPaused(p => !p)}><Text style={styles.resetIcon}>{paused ? '▶' : '⏸'}</Text></TouchableOpacity>
+          <TouchableOpacity 
+            style={styles.helpBtn} 
+            onPress={() => { setPaused(true); setShowTutorial(true); setTutorialStep(0); }}
+          >
+            <Text style={styles.helpIcon}>?</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* Score + Level Row */}
@@ -844,8 +853,6 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
         )}
       </View>
 
-      <TimerBar timeLeft={timeLeft} maxTime={getMaxTime()} flashValue={timerBarFlash} showTimeBonus={showTimeBonus} />
-
       {/* Level Up Banner */}
       {showLevelUp && (
         <Animated.View style={[styles.levelUpBanner, levelUpAnimStyle]}>
@@ -853,17 +860,44 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
         </Animated.View>
       )}
 
+      {/* Top Section Background */}
+      <View style={styles.topSectionBg}>
+        <Image 
+          source={require('../assets/img/BG.png')} 
+          style={styles.topBgImage} 
+          resizeMode="cover"
+        />
+      </View>
+
       {/* Worker and Customer */}
       <View style={styles.charactersRow}>
         {/* Worker (Left) */}
         <View style={styles.characterWrapper}>
-          <Image source={showDelivery ? workerImgDelivery : workerImg} style={styles.workerImage} resizeMode="contain" />
+          <Image 
+            source={showDelivery ? workerImgDelivery : workerImg} 
+            style={[styles.workerImage, { transform: [{ translateY: -17 }] }]} 
+            resizeMode="contain" 
+          />
         </View>
 
         {/* Customer (Right) */}
         <View style={styles.characterWrapper}>
           <Animated.View style={[styles.characterEmojiWrapper, customerSlideStyle]}>
-            <Image source={getCustomerImg(customerRequest, customerImgSeed)} style={customerRequest <= 9 ? styles.customerImageSmall : styles.customerImage} resizeMode="contain" />
+            {(() => {
+              const customerData = getCustomerImg(customerRequest, customerImgSeed);
+              const isC3 = customerData.isC3;
+              const img = customerData.img || customerData;
+              return (
+                <Image 
+                  source={img} 
+                  style={[
+                    customerRequest <= 9 ? styles.customerImageSmall : styles.customerImage,
+                    { transform: [{ translateY: -17 }] }
+                  ]} 
+                  resizeMode="contain" 
+                />
+              );
+            })()}
             <View style={[styles.svgBubbleContainer, c5Condition && styles.svgBubbleContainerLarge]}>
               <Image 
                 source={require('../assets/img/bubble.png')} 
@@ -884,15 +918,15 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
         </View>
       </View>
 
+      <TimerBar timeLeft={timeLeft} maxTime={getMaxTime()} flashValue={timerBarFlash} showTimeBonus={showTimeBonus} />
 
       {!gameOver && possibleCombinations === 0 && (
         <View style={styles.noComboBanner}>
           <View style={styles.noComboPopup}>
-            <Text style={styles.noComboEmoji}>🔄</Text>
-            <Text style={styles.noComboTitle}>조합 없음!</Text>
-            <Text style={styles.noComboDesc}>가능한 조합이 없습니다{`\n`}보드를 새로고침하세요</Text>
+            <Text style={styles.noComboTitle}>No Combinations!</Text>
+            <Text style={styles.noComboDesc}>No possible combinations{`\n`}Please refresh the board</Text>
             <Pressable style={styles.noComboBtn} onPress={() => { setPaused(false); resetBoard(); }}>
-              <Text style={styles.noComboBtnText}>새로고침</Text>
+              <Text style={styles.noComboBtnText}>Refresh</Text>
             </Pressable>
           </View>
         </View>
@@ -1108,43 +1142,72 @@ const TimerBar = React.memo(function TimerBar({ timeLeft, maxTime, flashValue, s
       {showTimeBonus && (
         <Text style={timerStyles.bonusText}>+{Math.round(showTimeBonus.amount)}초</Text>
       )}
-      <Animated.View style={[timerStyles.container, flashStyle]}>
-        <View style={timerStyles.track}>
-          <Animated.View style={[timerStyles.fill, fillStyle]} />
-          <View style={timerStyles.timeOverlay}>
-            <Text style={timerStyles.timeText}>{timeDisplay}</Text>
+      <View style={timerStyles.barContainer}>
+        <Image 
+          source={require('../assets/img/bar.png')} 
+          style={timerStyles.bgImage}
+          resizeMode="cover"
+        />
+        <Animated.View style={[timerStyles.container, flashStyle]}>
+          <View style={timerStyles.track}>
+            <Animated.View style={[timerStyles.fill, fillStyle]} />
+            <View style={timerStyles.timeOverlay}>
+              <Text style={timerStyles.timeText}>{timeDisplay}</Text>
+            </View>
           </View>
-        </View>
-      </Animated.View>
+        </Animated.View>
+      </View>
     </View>
   );
 });
 
 const timerStyles = StyleSheet.create({
   wrapper: {
-    paddingHorizontal: 20,
-    marginVertical: 8,
+    marginVertical: 0,
+    width: '100%',
     position: 'relative',
   },
+  barContainer: {
+    position: 'relative',
+    width: '100%',
+    aspectRatio: 1021 / 180,
+  },
+  bgImage: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    width: '100%',
+    height: '100%',
+  },
   container: { 
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
     flexDirection: 'row', 
     alignItems: 'center',
-    shadowColor: '#FFD700',
-    shadowOffset: { width: 0, height: 0 },
+    paddingHorizontal: 12,
+    paddingVertical: 8,
   },
-  track: { flex: 1, height: 24, backgroundColor: '#E0E0E0', borderRadius: 12, overflow: 'hidden', position: 'relative' },
-  fill: { height: '100%', width: '100%', backgroundColor: '#4CAF50', borderRadius: 12, position: 'absolute', left: 0, top: 0 },
+  track: { flex: 1, height: '40%', backgroundColor: 'rgba(224,224,224,0.3)', borderRadius: 12, overflow: 'hidden', position: 'relative' },
+  fill: { height: '100%', backgroundColor: 'rgba(76,175,80,0.85)', borderRadius: 12, position: 'absolute', left: 0, top: 0 },
   timeOverlay: { 
     position: 'absolute',
-    right: 10,
+    right: 16,
     top: 0,
     bottom: 0,
     justifyContent: 'center',
   },
   timeText: { 
-    color: '#333', 
-    fontSize: 16, 
+    color: '#FFF', 
+    fontSize: 14, 
     fontWeight: '900',
+    textShadowColor: '#000',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
   },
   bonusText: {
     position: 'absolute',
@@ -1285,7 +1348,7 @@ const styles = StyleSheet.create({
   scoreRow: { 
     flexDirection: 'row', 
     alignItems: 'center', 
-    backgroundColor: '#FFF',
+    backgroundColor: 'rgba(255,255,255,0.7)',
     paddingHorizontal: 20,
     paddingVertical: 12,
     borderRadius: 16,
@@ -1308,7 +1371,7 @@ const styles = StyleSheet.create({
   },
   statLabel: { 
     fontSize: 10, 
-    color: '#999', 
+    color: '#000', 
     fontWeight: '600',
     letterSpacing: 0.5,
     marginBottom: 4,
@@ -1316,6 +1379,9 @@ const styles = StyleSheet.create({
   statValue: { 
     fontSize: 28, 
     fontWeight: '900',
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 2,
+    textShadowColor: '#000',
   },
   levelValue: { color: '#FF8C42' },
   scoreValue: { color: '#FF4444' },
@@ -1327,29 +1393,34 @@ const styles = StyleSheet.create({
     fontWeight: '800',
   },
   
+  // Top Section Background (covers header + score + characters only)
+  topSectionBg: { position: 'absolute', top: 0, left: 0, right: 0, height: 278, zIndex: -1 },
+  topBgImage: { width: '100%', height: '100%' },
+
   // Characters (Worker & Customer)
-  charactersRow: { flexDirection: 'row', justifyContent: 'space-around', paddingHorizontal: 20, marginBottom: 6, marginTop: 6 },
+  charactersRow: { flexDirection: 'row', justifyContent: 'space-around', alignItems: 'flex-end', paddingHorizontal: 20, paddingBottom: 0, marginBottom: 6, marginTop: 6, position: 'relative', overflow: 'hidden', borderRadius: 16, height: 150 },
   characterWrapper: { 
     alignItems: 'center', 
     flex: 1,
     justifyContent: 'flex-end',
+    zIndex: 1,
   },
   workerImage: {
-    height: 110,
+    height: 130,
     aspectRatio: 677 / 369,
   },
   customerImage: {
-    height: 110,
+    height: 130,
     aspectRatio: 677 / 369,
   },
   customerImageSmall: {
-    height: 75,
+    height: 90,
     aspectRatio: 677 / 369,
   },
   characterEmojiWrapper: {
     position: 'relative',
     width: 275,
-    height: 110,
+    height: 130,
     alignItems: 'center',
     justifyContent: 'flex-end',
   },
@@ -1383,10 +1454,13 @@ const styles = StyleSheet.create({
     gap: 0,
   },
   svgBubbleText: { 
-    fontSize: 16, 
+    fontSize: 24, 
     fontWeight: '900', 
     color: '#FFF',
-    lineHeight: 18,
+    lineHeight: 28,
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 3,
+    textShadowColor: '#000',
   },
   bubbleFruitRow: {
     alignItems: 'center',
@@ -1400,10 +1474,10 @@ const styles = StyleSheet.create({
   // Cartoon style bubble
   cartoonBubble: { 
     backgroundColor: '#FF6B42', 
-    borderRadius: 16, 
-    paddingHorizontal: 16, 
-    paddingVertical: 10, 
-    minWidth: 56, 
+    borderRadius: 20, 
+    paddingHorizontal: 22, 
+    paddingVertical: 14, 
+    minWidth: 70, 
     alignItems: 'center',
     justifyContent: 'center',
     marginLeft: 8,
@@ -1416,9 +1490,12 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   cartoonBubbleText: { 
-    fontSize: 20, 
+    fontSize: 28, 
     fontWeight: '900', 
     color: '#FFF',
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 3,
+    textShadowColor: '#000',
   },
   // Simple tail pointing left
   cartoonBubbleTail: {
@@ -1508,7 +1585,7 @@ const styles = StyleSheet.create({
   sumBadgeWrapper: { flex: 1, alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' },
   sumBadge: { color: '#FFF', fontWeight: '900', fontSize: 22, textShadowColor: 'rgba(0,0,0,0.6)', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 4 },
   sumBadgePerfect: { color: '#AFFFB0', textShadowColor: 'rgba(0,100,0,0.5)' },
-  board: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  board: { flex: 1, justifyContent: 'flex-start', alignItems: 'center', marginTop: 20 },
   boardDisabled: { opacity: 0.3 },
   noComboBanner: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, alignItems: 'center', justifyContent: 'center', zIndex: 100 },
   noComboPopup: { backgroundColor: 'rgba(30,20,10,0.92)', borderRadius: 24, paddingVertical: 28, paddingHorizontal: 32, alignItems: 'center', borderWidth: 2, borderColor: '#FF8C42', shadowColor: '#000', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.4, shadowRadius: 16, elevation: 12 },
