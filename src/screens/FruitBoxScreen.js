@@ -822,7 +822,7 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
     <View style={[styles.container, { backgroundColor: theme.bg }]}>
       <View style={[styles.header, { marginTop: 50 }]}>
         <Pressable style={styles.backBtn} onPress={onBackToStart}>
-          <Image source={require('../assets/img/back_arrow.png')} style={{ width: 24, height: 24 }} resizeMode="contain" />
+          <Image source={require('../assets/img/back_arrow.png')} style={{ width: 24, height: 24, tintColor: '#000' }} resizeMode="contain" />
         </Pressable>
 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
           <TouchableOpacity style={styles.resetBtn} onPress={() => setPaused(p => !p)}><Text style={styles.resetIcon}>{paused ? '▶' : '⏸'}</Text></TouchableOpacity>
@@ -836,7 +836,7 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
       </View>
 
       {/* Score + Level Row */}
-      <View style={{ alignItems: 'center' }}>
+      <View style={{ alignItems: 'center', position: 'absolute', top: 95, left: 0, right: 0, zIndex: 10 }}>
         <View style={styles.scoreRow}>
           <View style={styles.statItem}>
             <Text style={styles.statLabel}>LV</Text>
@@ -875,7 +875,7 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
         <View style={styles.characterWrapper}>
           <Image 
             source={showDelivery ? workerImgDelivery : workerImg} 
-            style={[styles.workerImage, { transform: [{ translateY: -17 }] }]} 
+            style={[styles.workerImage, { transform: [{ translateY: -13 }] }]} 
             resizeMode="contain" 
           />
         </View>
@@ -892,7 +892,7 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
                   source={img} 
                   style={[
                     customerRequest <= 9 ? styles.customerImageSmall : styles.customerImage,
-                    { transform: [{ translateY: -17 }] }
+                    { transform: [{ translateY: -13 }] }
                   ]} 
                   resizeMode="contain" 
                 />
@@ -1333,12 +1333,12 @@ const Cell = React.memo(function Cell({ cell, anims, isSelected, shakeAnim, cell
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#FFF8E7', paddingTop: 12, overflow: 'hidden' },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, marginBottom: 2 },
-  backBtn: { width: 40, height: 40, backgroundColor: 'rgba(139,115,85,0.12)', borderRadius: 12, justifyContent: 'center', alignItems: 'center' },
+  backBtn: { width: 40, height: 40, backgroundColor: 'rgba(255,248,231,0.8)', borderRadius: 12, justifyContent: 'center', alignItems: 'center' },
   title: { fontSize: 24, fontWeight: '900', color: '#FF8C42', letterSpacing: 2 },
   resetBtn: { width: 44, height: 44, backgroundColor: '#4CAF50', borderRadius: 22, justifyContent: 'center', alignItems: 'center', shadowColor: '#388E3C', shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.4, shadowRadius: 6, elevation: 6, borderWidth: 2, borderColor: '#81C784' },
   resetIcon: { color: '#FFF', fontSize: 22, fontWeight: 'bold', includeFontPadding: false, textAlign: 'center', textAlignVertical: 'center', marginTop: -2 },
-  helpBtn: { width: 40, height: 40, backgroundColor: 'rgba(139,115,85,0.12)', borderRadius: 12, justifyContent: 'center', alignItems: 'center' },
-  helpIcon: { color: '#8B7355', fontSize: 20, fontWeight: 'bold' },
+  helpBtn: { width: 40, height: 40, backgroundColor: 'rgba(255,248,231,0.8)', borderRadius: 12, justifyContent: 'center', alignItems: 'center' },
+  helpIcon: { color: '#000', fontSize: 20, fontWeight: 'bold' },
   
   // Level Up Overlay
   levelUpBanner: { position: 'absolute', top: 60, alignSelf: 'center', zIndex: 200, backgroundColor: '#FF8C42', borderRadius: 20, paddingHorizontal: 20, paddingVertical: 8 },
@@ -1398,7 +1398,7 @@ const styles = StyleSheet.create({
   topBgImage: { width: '100%', height: '100%' },
 
   // Characters (Worker & Customer)
-  charactersRow: { flexDirection: 'row', justifyContent: 'space-around', alignItems: 'flex-end', paddingHorizontal: 20, paddingBottom: 0, marginBottom: 6, marginTop: 6, position: 'relative', overflow: 'hidden', borderRadius: 16, height: 150 },
+  charactersRow: { flexDirection: 'row', justifyContent: 'space-around', alignItems: 'flex-end', paddingHorizontal: 20, paddingBottom: 0, marginBottom: 6, marginTop: 35, position: 'relative', overflow: 'hidden', borderRadius: 16, height: 150 },
   characterWrapper: { 
     alignItems: 'center', 
     flex: 1,
