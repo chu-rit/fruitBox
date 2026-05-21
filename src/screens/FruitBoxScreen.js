@@ -813,7 +813,7 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
   return (
     <>
     <View style={[styles.container, { backgroundColor: theme.bg }]}>
-      <View style={styles.header}>
+      <View style={[styles.header, { marginTop: 50 }]}>
         <Pressable style={styles.backBtn} onPress={onBackToStart}>
           <Image source={require('../assets/img/back_arrow.png')} style={{ width: 24, height: 24 }} resizeMode="contain" />
         </Pressable>
