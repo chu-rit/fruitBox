@@ -95,7 +95,7 @@ export default function StartScreen({ onStart, onSettings, onRanking, onLogoPres
 
       {/* Footer */}
       <View style={styles.footer}>
-        <Text style={styles.version}>v1.1.0</Text>
+        <Text style={styles.version}>v1.0.5</Text>
         <TouchableOpacity onPress={() => setShowCredits(true)} style={styles.creditsBtn}>
           <Text style={styles.creditsText}>Credits</Text>
         </TouchableOpacity>
@@ -228,7 +228,7 @@ const styles = StyleSheet.create({
   },
   footer: {
     position: 'absolute',
-    bottom: 18,
+    bottom: 60,
     left: 0,
     right: 0,
     alignItems: 'center',

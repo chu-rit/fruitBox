@@ -430,13 +430,13 @@ export default function GameScreen({ onBackToStart, mapSize = DEFAULT_GRID_SIZE 
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
+      <View style={[styles.header, { transform: [{ translateY: 150 }] }]}>
         <Text style={styles.backText} onPress={onBackToStart}>←</Text>
         <Text style={styles.title}>APPLE BOX</Text>
         <Text style={styles.resetText}>↻</Text>
       </View>
 
-      <View style={styles.stats}>
+      <View style={[styles.stats, { transform: [{ translateY: 50 }] }]}>
         <Animated.View style={styles.statBox}>
           <Text style={styles.statLabel}>STEP</Text>
           <ScoreDisplay score={step} scale={scoreScale} />
@@ -467,64 +467,6 @@ export default function GameScreen({ onBackToStart, mapSize = DEFAULT_GRID_SIZE 
           </Text>
         </View>
       )}
-
-      <GestureHandlerRootView style={[styles.board, gameOver && styles.boardDisabled]}>
-        <GestureDetector gesture={panGesture}>
-        <View style={styles.gridWrapper}>
-          {assistMode && assistCombos.map((combo, i) => (
-            <View
-              key={i}
-              pointerEvents="none"
-              style={[
-                styles.assistOverlay,
-                {
-                  left: combo.c1 * (CELL_SIZE + CELL_MARGIN * 2),
-                  top: combo.r1 * (CELL_SIZE + CELL_MARGIN * 2),
-                  width: (combo.c2 - combo.c1 + 1) * (CELL_SIZE + CELL_MARGIN * 2) - CELL_MARGIN * 2,
-                  height: (combo.r2 - combo.r1 + 1) * (CELL_SIZE + CELL_MARGIN * 2) - CELL_MARGIN * 2,
-                },
-              ]}
-            />
-          ))}
-          {selection && isDragging && (() => {
-            const minRow = Math.min(selection.startRow, selection.endRow);
-            const maxRow = Math.max(selection.startRow, selection.endRow);
-            const minCol = Math.min(selection.startCol, selection.endCol);
-            const maxCol = Math.max(selection.startCol, selection.endCol);
-            const cellStep = CELL_SIZE + CELL_MARGIN * 2;
-            return (
-              <View pointerEvents="none" style={[styles.dragOverlay, {
-                left: minCol * cellStep,
-                top: minRow * cellStep,
-                width: (maxCol - minCol + 1) * cellStep - CELL_MARGIN * 2,
-                height: (maxRow - minRow + 1) * cellStep - CELL_MARGIN * 2,
-              }]}>
-                <View style={styles.sumBadgeWrapper}>
-                  <Text style={[styles.sumBadge, currentSum.sum === step && styles.sumBadgePerfect]}>
-                    {currentSum.sum}
-                  </Text>
-                </View>
-              </View>
-            );
-          })()}
-          {board.map((row, rowIndex) => (
-            <View key={rowIndex} style={styles.row}>
-              {row.map((cell, colIndex) => (
-                <Cell
-                  key={colIndex}
-                  cell={cell}
-                  rowIndex={rowIndex}
-                  colIndex={colIndex}
-                  anims={cellAnims[rowIndex][colIndex]}
-                  isSelected={isInSelection(rowIndex, colIndex)}
-                  cellSize={CELL_SIZE}
-                />
-              ))}
-            </View>
-          ))}
-          </View>
-        </GestureDetector>
-      </GestureHandlerRootView>
     </View>
   );
 }
@@ -636,14 +578,15 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#FFF8E7',
-    paddingTop: 40,
+    paddingTop: 150,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 20,
-    marginBottom: 10,
+    marginBottom: 40,
+    zIndex: 1000,
   },
   backText: {
     width: 40,
@@ -677,7 +620,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-around',
     paddingHorizontal: 20,
-    marginBottom: 10,
+    marginBottom: 40,
+    zIndex: 1000,
   },
   statBox: {
     backgroundColor: '#FFF',
@@ -724,9 +668,14 @@ const styles = StyleSheet.create({
     color: '#FF6B6B',
   },
   board: {
-    flex: 1,
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
     justifyContent: 'center',
     alignItems: 'center',
+    zIndex: 1,
   },
   boardDisabled: {
     opacity: 0.3,
