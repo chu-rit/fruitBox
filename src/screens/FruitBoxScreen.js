@@ -820,7 +820,7 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
   return (
     <>
     <View style={[styles.container, { backgroundColor: theme.bg }]}>
-      <View style={[styles.header, { marginTop: 50 }]}>
+      <View style={[styles.header, { marginTop: 50, zIndex: 20 }]}>
         <Pressable style={styles.backBtn} onPress={onBackToStart}>
           <Image source={require('../assets/img/back_arrow.png')} style={{ width: 24, height: 24, tintColor: '#000' }} resizeMode="contain" />
         </Pressable>
@@ -836,18 +836,29 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
       </View>
 
       {/* Score + Level Row */}
-      <View style={{ alignItems: 'center', position: 'absolute', top: 95, left: 0, right: 0, zIndex: 10 }}>
-        <View style={styles.scoreRow}>
-          <View style={styles.statItem}>
-            <Text style={styles.statLabel}>LV</Text>
-            <Text style={[styles.statValue, { color: theme.blockFill }]}>{level >= 5 ? 'MAX' : level}</Text>
+      <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 12, position: 'absolute', top: 70, left: 0, right: 0, zIndex: 10 }}>
+        {/* Level Card */}
+        <View style={styles.statCardOuter}>
+          <View style={styles.statCard}>
+            <View style={styles.statCardHeader}>
+              <Text style={styles.statCardLabel}>LEVEL</Text>
+            </View>
+            <View style={styles.statCardBody}>
+              <Text style={[styles.statCardValue, { color: theme.blockFill }]}>{level >= 5 ? 'MAX' : level}</Text>
+            </View>
           </View>
-          <View style={styles.statDivider} />
-          <Pressable style={styles.statItem} onPress={handlePossibleTap}>
-            <Text style={styles.statLabel}>SCORE</Text>
-            <Text style={[styles.statValue, styles.scoreValue]}>{score}</Text>
-          </Pressable>
         </View>
+        {/* Score Card */}
+        <Pressable style={styles.statCardOuter} onPress={handlePossibleTap}>
+          <View style={styles.statCard}>
+            <View style={styles.statCardHeader}>
+              <Text style={styles.statCardLabel}>SCORE</Text>
+            </View>
+            <View style={styles.statCardBody}>
+              <Text style={[styles.statCardValue, styles.scoreValue]}>{score}</Text>
+            </View>
+          </View>
+        </Pressable>
         {showScoreBonus && (
           <Text style={styles.scoreBonusText}>+{showScoreBonus.amount}점</Text>
         )}
@@ -863,9 +874,9 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
       {/* Top Section Background */}
       <View style={styles.topSectionBg}>
         <Image 
-          source={require('../assets/img/BG.png')} 
+          source={require('../assets/img/BG2.png')} 
           style={styles.topBgImage} 
-          resizeMode="cover"
+          resizeMode="center"
         />
       </View>
 
@@ -1111,7 +1122,7 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
 }
 
 const TimerBar = React.memo(function TimerBar({ timeLeft, maxTime, flashValue, showTimeBonus }) {
-  const [timeDisplay, setTimeDisplay] = useState(Math.ceil(timeLeft.value));
+  const [timeDisplay, setTimeDisplay] = useState(maxTime);
 
   useAnimatedReaction(
     () => Math.ceil(timeLeft.value),
@@ -1123,11 +1134,6 @@ const TimerBar = React.memo(function TimerBar({ timeLeft, maxTime, flashValue, s
     }
   );
 
-  const flashStyle = useAnimatedStyle(() => ({
-    shadowOpacity: 0.2 + flashValue.value * 0.5,
-    shadowRadius: 4 + flashValue.value * 8,
-  }));
-  
   const fillStyle = useAnimatedStyle(() => {
     const progress = Math.max(0, Math.min(1, timeLeft.value / maxTime));
     const fillColor = timeLeft.value > 9 ? '#4CAF50' : timeLeft.value > 5 ? '#FF9800' : '#FF4444';
@@ -1142,21 +1148,19 @@ const TimerBar = React.memo(function TimerBar({ timeLeft, maxTime, flashValue, s
       {showTimeBonus && (
         <Text style={timerStyles.bonusText}>+{Math.round(showTimeBonus.amount)}초</Text>
       )}
-      <View style={timerStyles.barContainer}>
-        <Image 
-          source={require('../assets/img/bar.png')} 
-          style={timerStyles.bgImage}
-          resizeMode="cover"
-        />
-        <Animated.View style={[timerStyles.container, flashStyle]}>
+      <View style={timerStyles.container}>
           <View style={timerStyles.track}>
-            <Animated.View style={[timerStyles.fill, fillStyle]} />
+            <Animated.View style={[timerStyles.fill, fillStyle]}>
+              <View style={timerStyles.fillHighlight} />
+            </Animated.View>
+            <View style={timerStyles.labelOverlay}>
+              <Text style={timerStyles.labelText}>시간</Text>
+            </View>
             <View style={timerStyles.timeOverlay}>
               <Text style={timerStyles.timeText}>{timeDisplay}</Text>
             </View>
           </View>
-        </Animated.View>
-      </View>
+        </View>
     </View>
   );
 });
@@ -1167,47 +1171,65 @@ const timerStyles = StyleSheet.create({
     width: '100%',
     position: 'relative',
   },
-  barContainer: {
-    position: 'relative',
-    width: '100%',
-    aspectRatio: 1021 / 180,
-  },
-  bgImage: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    width: '100%',
-    height: '100%',
-  },
   container: { 
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
+    width: '100%',
     flexDirection: 'row', 
     alignItems: 'center',
     paddingHorizontal: 12,
-    paddingVertical: 8,
+    paddingVertical: 6,
   },
-  track: { flex: 1, height: '40%', backgroundColor: 'rgba(224,224,224,0.3)', borderRadius: 12, overflow: 'hidden', position: 'relative' },
-  fill: { height: '100%', backgroundColor: 'rgba(76,175,80,0.85)', borderRadius: 12, position: 'absolute', left: 0, top: 0 },
+  track: {
+    flex: 1,
+    height: 32,
+    backgroundColor: '#E8E8E8',
+    borderRadius: 16,
+    overflow: 'hidden',
+    position: 'relative',
+    borderWidth: 2,
+    borderColor: '#FFF',
+  },
+  fill: {
+    height: '100%',
+    borderRadius: 14,
+    position: 'absolute',
+    left: 0,
+    top: 0,
+  },
+  fillHighlight: {
+    position: 'absolute',
+    top: 4,
+    left: 8,
+    right: 8,
+    height: 6,
+    backgroundColor: 'rgba(255,255,255,0.4)',
+    borderRadius: 3,
+  },
+  labelOverlay: {
+    position: 'absolute',
+    left: 14,
+    top: 0,
+    bottom: 0,
+    justifyContent: 'center',
+  },
+  labelText: {
+    color: '#FFF',
+    fontSize: 13,
+    fontWeight: '900',
+    textShadowColor: 'rgba(0,0,0,0.35)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
+  },
   timeOverlay: { 
     position: 'absolute',
-    right: 16,
+    right: 14,
     top: 0,
     bottom: 0,
     justifyContent: 'center',
   },
   timeText: { 
-    color: '#FFF', 
-    fontSize: 14, 
+    color: '#666', 
+    fontSize: 13, 
     fontWeight: '900',
-    textShadowColor: '#000',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 2,
   },
   bonusText: {
     position: 'absolute',
@@ -1335,8 +1357,8 @@ const styles = StyleSheet.create({
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, marginBottom: 2 },
   backBtn: { width: 40, height: 40, backgroundColor: 'rgba(255,248,231,0.8)', borderRadius: 12, justifyContent: 'center', alignItems: 'center' },
   title: { fontSize: 24, fontWeight: '900', color: '#FF8C42', letterSpacing: 2 },
-  resetBtn: { width: 44, height: 44, backgroundColor: '#4CAF50', borderRadius: 22, justifyContent: 'center', alignItems: 'center', shadowColor: '#388E3C', shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.4, shadowRadius: 6, elevation: 6, borderWidth: 2, borderColor: '#81C784' },
-  resetIcon: { color: '#FFF', fontSize: 22, fontWeight: 'bold', includeFontPadding: false, textAlign: 'center', textAlignVertical: 'center', marginTop: -2 },
+  resetBtn: { width: 40, height: 40, backgroundColor: 'rgba(255,248,231,0.8)', borderRadius: 12, justifyContent: 'center', alignItems: 'center' },
+  resetIcon: { color: '#000', fontSize: 18, fontWeight: 'bold', includeFontPadding: false, textAlign: 'center', textAlignVertical: 'center' },
   helpBtn: { width: 40, height: 40, backgroundColor: 'rgba(255,248,231,0.8)', borderRadius: 12, justifyContent: 'center', alignItems: 'center' },
   helpIcon: { color: '#000', fontSize: 20, fontWeight: 'bold' },
   
@@ -1345,46 +1367,55 @@ const styles = StyleSheet.create({
   levelUpBannerText: { fontSize: 16, fontWeight: '900', color: '#FFF', letterSpacing: 1 },
 
   // Score Box
-  scoreRow: { 
-    flexDirection: 'row', 
-    alignItems: 'center', 
-    backgroundColor: 'rgba(255,255,255,0.7)',
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    borderRadius: 16,
-    marginBottom: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 6,
-    elevation: 3,
-  },
-  statItem: { 
+  statCardOuter: {
     alignItems: 'center',
-    paddingHorizontal: 12,
+    backgroundColor: '#6B3E1E',
+    borderRadius: 14,
+    padding: 3,
+    shadowColor: '#3B1F08',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.4,
+    shadowRadius: 5,
+    elevation: 6,
   },
-  statDivider: {
-    width: 1,
-    height: 32,
-    backgroundColor: '#E8E8E8',
-    marginHorizontal: 8,
+  statCard: {
+    width: 68,
+    borderRadius: 11,
+    overflow: 'hidden',
+    borderWidth: 1.5,
+    borderColor: '#E8C88A',
   },
-  statLabel: { 
-    fontSize: 10, 
-    color: '#000', 
-    fontWeight: '600',
-    letterSpacing: 0.5,
-    marginBottom: 4,
+  statCardHeader: {
+    backgroundColor: '#8B5E2E',
+    paddingVertical: 4,
+    alignItems: 'center',
+    borderBottomWidth: 1.5,
+    borderBottomColor: '#E8C88A',
   },
-  statValue: { 
-    fontSize: 28, 
+  statCardLabel: {
+    fontSize: 9,
     fontWeight: '900',
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 2,
-    textShadowColor: '#000',
+    color: '#FFF0CC',
+    letterSpacing: 1,
+    textShadowColor: 'rgba(0,0,0,0.5)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 1,
   },
-  levelValue: { color: '#FF8C42' },
-  scoreValue: { color: '#FF4444' },
+  statCardBody: {
+    backgroundColor: '#FDF0D0',
+    paddingVertical: 6,
+    alignItems: 'center',
+  },
+  statCardValue: {
+    fontSize: 22,
+    fontWeight: '900',
+    color: '#7A4010',
+    textShadowColor: 'rgba(120,60,0,0.2)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 1,
+  },
+  levelValue: { color: '#7A4010' },
+  scoreValue: { color: '#7A4010' },
   scoreBonusText: {
     position: 'absolute',
     top: 70,
@@ -1394,11 +1425,11 @@ const styles = StyleSheet.create({
   },
   
   // Top Section Background (covers header + score + characters only)
-  topSectionBg: { position: 'absolute', top: 0, left: 0, right: 0, height: 278, zIndex: -1 },
+  topSectionBg: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: -1 },
   topBgImage: { width: '100%', height: '100%' },
 
   // Characters (Worker & Customer)
-  charactersRow: { flexDirection: 'row', justifyContent: 'space-around', alignItems: 'flex-end', paddingHorizontal: 20, paddingBottom: 0, marginBottom: 6, marginTop: 35, position: 'relative', overflow: 'hidden', borderRadius: 16, height: 150 },
+  charactersRow: { flexDirection: 'row', justifyContent: 'space-around', alignItems: 'flex-end', paddingHorizontal: 20, paddingBottom: 0, marginBottom: 6, marginTop: 40, position: 'relative', overflow: 'hidden', borderRadius: 16, height: 150 },
   characterWrapper: { 
     alignItems: 'center', 
     flex: 1,
