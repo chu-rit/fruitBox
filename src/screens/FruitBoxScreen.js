@@ -1427,7 +1427,7 @@ const styles = StyleSheet.create({
   bgTop: { position: 'absolute', top: 0, left: 0, width: width, height: '50%', zIndex: 0 },
 
   // Characters (Worker & Customer)
-  charactersRow: { flexDirection: 'row', justifyContent: 'space-around', alignItems: 'flex-end', paddingHorizontal: 20, paddingBottom: 0, marginBottom: 6, marginTop: 10, position: 'relative', borderRadius: 16, height: 200 },
+  charactersRow: { flexDirection: 'row', justifyContent: 'space-around', alignItems: 'flex-end', paddingHorizontal: 20, paddingBottom: 0, marginBottom: 6, marginTop: 50, position: 'relative', borderRadius: 16, height: 200 },
   characterWrapper: { 
     alignItems: 'center', 
     flex: 1,
