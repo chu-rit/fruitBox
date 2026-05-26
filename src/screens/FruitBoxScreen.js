@@ -850,6 +850,10 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
         </View>
       </View>
 
+      {/* Background: BOT anchored to bottom, TOP anchored to top */}
+      <Image source={require('../assets/img/BG_BOT.png')} style={styles.bgBot} resizeMode="stretch" />
+      <Image source={require('../assets/img/BG_TOP.png')} style={styles.bgTop} resizeMode="stretch" />
+
       {/* Score + Level Numbers on Background */}
       <Text style={[styles.bgLevelNumber, { color: '#8B5A3C' }]}>{level >= 5 ? 'MAX' : level}</Text>
       <Pressable onPress={handlePossibleTap} style={styles.bgScoreNumber}>
@@ -858,10 +862,6 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
       {showScoreBonus && (
         <Text style={styles.scoreBonusText}>+{showScoreBonus.amount}점</Text>
       )}
-
-      {/* Background: BOT anchored to bottom, TOP anchored to top */}
-      <Image source={require('../assets/img/BG_BOT.png')} style={styles.bgBot} resizeMode="stretch" />
-      <Image source={require('../assets/img/BG_TOP.png')} style={styles.bgTop} resizeMode="stretch" />
 
       {/* Level Up Banner */}
       {showLevelUp && (
@@ -1176,7 +1176,9 @@ const TimerBar = React.memo(function TimerBar({ timeLeft, maxTime, flashValue, s
 
 const timerStyles = StyleSheet.create({
   wrapper: {
-    marginVertical: 0,
+    marginTop: -10,
+    marginBottom: 0,
+    paddingVertical: 0,
     width: '100%',
     position: 'relative',
   },
@@ -1185,7 +1187,7 @@ const timerStyles = StyleSheet.create({
     flexDirection: 'row', 
     alignItems: 'center',
     paddingHorizontal: 12,
-    paddingVertical: -2,
+    paddingVertical: 0,
   },
   track: {
     flex: 1,
@@ -1319,7 +1321,7 @@ const Cell = React.memo(function Cell({ cell, anims, isSelected, shakeAnim, cell
 });
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: 'transparent' },
+  container: { flex: 1, backgroundColor: 'transparent', position: 'relative' },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, marginTop: '20%', marginBottom: 2 },
   backBtn: { width: 40, height: 40, backgroundColor: 'transparent', borderRadius: 12, justifyContent: 'center', alignItems: 'center', opacity: 0 },
   title: { fontSize: 24, fontWeight: '900', color: '#FF8C42', letterSpacing: 2 },
@@ -1394,7 +1396,7 @@ const styles = StyleSheet.create({
   // Background Numbers (Level & Score on BG2) - Individual Position Control
   bgLevelNumber: {
     position: 'absolute',
-    top: '17%',
+    top: '19.5%',
     left: '34%',
     width: width * 0.10,
     fontSize: width * 0.05,
@@ -1408,7 +1410,7 @@ const styles = StyleSheet.create({
   },
   bgScoreNumber: {
     position: 'absolute',
-    top: '17%',
+    top: '19.5%',
     left: '48%',
     width: width * 0.12,
     fontSize: width * 0.05,
@@ -1421,11 +1423,11 @@ const styles = StyleSheet.create({
   },
   
   // Background images
-  bgBot: { position: 'absolute', bottom: 0, left: 0, width: width, height: '100%', zIndex: -2 },
-  bgTop: { position: 'absolute', top: 0, left: 0, width: width, height: '60%', zIndex: -1 },
+  bgBot: { position: 'absolute', top: 0, left: 0, width: width, height: height, zIndex: 0 },
+  bgTop: { position: 'absolute', top: 0, left: 0, width: width, height: '50%', zIndex: 0 },
 
   // Characters (Worker & Customer)
-  charactersRow: { flexDirection: 'row', justifyContent: 'space-around', alignItems: 'flex-end', paddingHorizontal: 20, paddingBottom: 0, marginBottom: 6, marginTop: 60, position: 'relative', borderRadius: 16, height: 200 },
+  charactersRow: { flexDirection: 'row', justifyContent: 'space-around', alignItems: 'flex-end', paddingHorizontal: 20, paddingBottom: 0, marginBottom: 6, marginTop: 10, position: 'relative', borderRadius: 16, height: 200 },
   characterWrapper: { 
     alignItems: 'center', 
     flex: 1,
@@ -1563,7 +1565,7 @@ const styles = StyleSheet.create({
   sumBadgeWrapper: { flex: 1, alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' },
   sumBadge: { color: '#FFF', fontWeight: '900', fontSize: 22, textShadowColor: 'rgba(0,0,0,0.6)', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 4 },
   sumBadgePerfect: { color: '#AFFFB0', textShadowColor: 'rgba(0,100,0,0.5)' },
-  board: { flex: 1, justifyContent: 'flex-start', alignItems: 'center', marginTop: 20, width: '100%' },
+  board: { flex: 1, justifyContent: 'flex-start', alignItems: 'center', marginTop: -10, width: '100%' },
   boardDisabled: { opacity: 0.3 },
   noComboBanner: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, alignItems: 'center', justifyContent: 'center', zIndex: 100 },
   noComboPopup: { backgroundColor: 'rgba(30,20,10,0.92)', borderRadius: 24, paddingVertical: 28, paddingHorizontal: 32, alignItems: 'center', borderWidth: 2, borderColor: '#FF8C42', shadowColor: '#000', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.4, shadowRadius: 16, elevation: 12 },
