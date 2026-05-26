@@ -65,6 +65,7 @@ const getCustomerImg = (request, seed) => {
 };
 
 const { width, height } = Dimensions.get('window');
+const nativeDriver = Platform.OS !== 'web';
 const aspectRatio = height / width;
 const bgImage = aspectRatio > 1.9
   ? require('../assets/img/BG(9x20).png')
@@ -463,17 +464,17 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
       }
     }
     const shakeSeq = (anim) => RNAnimated.sequence([
-      RNAnimated.timing(anim, { toValue: 6, duration: 60, useNativeDriver: true }),
-      RNAnimated.timing(anim, { toValue: -6, duration: 60, useNativeDriver: true }),
-      RNAnimated.timing(anim, { toValue: 6, duration: 60, useNativeDriver: true }),
-      RNAnimated.timing(anim, { toValue: -6, duration: 60, useNativeDriver: true }),
-      RNAnimated.timing(anim, { toValue: 0, duration: 60, useNativeDriver: true }),
+      RNAnimated.timing(anim, { toValue: 6, duration: 60, useNativeDriver: nativeDriver }),
+      RNAnimated.timing(anim, { toValue: -6, duration: 60, useNativeDriver: nativeDriver }),
+      RNAnimated.timing(anim, { toValue: 6, duration: 60, useNativeDriver: nativeDriver }),
+      RNAnimated.timing(anim, { toValue: -6, duration: 60, useNativeDriver: nativeDriver }),
+      RNAnimated.timing(anim, { toValue: 0, duration: 60, useNativeDriver: nativeDriver }),
       RNAnimated.delay(800),
-      RNAnimated.timing(anim, { toValue: 6, duration: 60, useNativeDriver: true }),
-      RNAnimated.timing(anim, { toValue: -6, duration: 60, useNativeDriver: true }),
-      RNAnimated.timing(anim, { toValue: 6, duration: 60, useNativeDriver: true }),
-      RNAnimated.timing(anim, { toValue: -6, duration: 60, useNativeDriver: true }),
-      RNAnimated.timing(anim, { toValue: 0, duration: 60, useNativeDriver: true }),
+      RNAnimated.timing(anim, { toValue: 6, duration: 60, useNativeDriver: nativeDriver }),
+      RNAnimated.timing(anim, { toValue: -6, duration: 60, useNativeDriver: nativeDriver }),
+      RNAnimated.timing(anim, { toValue: 6, duration: 60, useNativeDriver: nativeDriver }),
+      RNAnimated.timing(anim, { toValue: -6, duration: 60, useNativeDriver: nativeDriver }),
+      RNAnimated.timing(anim, { toValue: 0, duration: 60, useNativeDriver: nativeDriver }),
     ]);
     anims.forEach(anim => { anim.setValue(0); shakeSeq(anim).start(); });
   }, [cellShakeAnims]);
@@ -606,8 +607,8 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
     for (let r = minRow; r <= maxRow; r++) {
       for (let c = minCol; c <= maxCol; c++) {
         const anims = cellAnims[r][c];
-        RNAnimated.timing(anims.opacity, { toValue: 0, duration: 150, useNativeDriver: true }).start();
-        RNAnimated.timing(anims.scale, { toValue: 0.8, duration: 150, useNativeDriver: true }).start();
+        RNAnimated.timing(anims.opacity, { toValue: 0, duration: 150, useNativeDriver: nativeDriver }).start();
+        RNAnimated.timing(anims.scale, { toValue: 0.8, duration: 150, useNativeDriver: nativeDriver }).start();
       }
     }
     
@@ -704,7 +705,7 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
             toValue: 0,
             damping: 18,
             stiffness: 200,
-            useNativeDriver: true,
+            useNativeDriver: nativeDriver,
           }).start();
         });
       }, 30);
@@ -901,14 +902,14 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
                 />
               );
             })()}
-            <View style={[styles.svgBubbleContainer, c5Condition && styles.svgBubbleContainerLarge]}>
+            <View style={[styles.bubbleContainer, c5Condition && styles.bubbleContainerLarge]}>
               <Image 
                 source={require('../assets/img/bubble.png')} 
                 style={{ width: '100%', height: '100%', position: 'absolute' }} 
                 resizeMode="contain"
               />
               <View style={styles.bubbleContent}>
-                <Text style={styles.svgBubbleText}>{customerRequest}</Text>
+                <Text style={styles.bubbleText}>{customerRequest}</Text>
                 {c5Condition && (
                   <View style={styles.bubbleFruitRow}>
                     <Image source={FRUIT_IMAGES[c5Condition.fruit]} style={{ width: 20, height: 20 }} resizeMode="contain" />
@@ -1116,6 +1117,7 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
 
 const TimerBar = React.memo(function TimerBar({ timeLeft, maxTime, flashValue, showTimeBonus, paddingH = 0 }) {
   const [timeDisplay, setTimeDisplay] = useState(maxTime);
+  const [trackWidth, setTrackWidth] = useState(0);
 
   useAnimatedReaction(
     () => Math.ceil(timeLeft.value),
@@ -1136,18 +1138,40 @@ const TimerBar = React.memo(function TimerBar({ timeLeft, maxTime, flashValue, s
     };
   });
   
+  const IMG_RATIO = 750 / 150;
+  const trackHeight = trackWidth / IMG_RATIO;
+  const GAUGE_OFFSET = trackWidth * 0.18;
+  const GAUGE_WIDTH = trackWidth * 0.72;
+
+  const imageWidthStyle = useAnimatedStyle(() => {
+    const progress = Math.max(0, Math.min(1, timeLeft.value / maxTime));
+    return { width: GAUGE_OFFSET + GAUGE_WIDTH * progress };
+  });
+
   return (
     <View style={timerStyles.wrapper}>
       {showTimeBonus && (
         <Text style={timerStyles.bonusText}>+{Math.round(showTimeBonus.amount)}초</Text>
       )}
       <View style={[timerStyles.container, { paddingHorizontal: paddingH }]}>
-          <View style={timerStyles.track}>
-            <Animated.View style={[timerStyles.fill, fillStyle]}>
-              <View style={timerStyles.fillHighlight} />
-            </Animated.View>
+        <View style={timerStyles.track} onLayout={e => setTrackWidth(e.nativeEvent.layout.width)}>
+          <Image
+            source={require('../assets/img/time_e.png')}
+            style={{ width: trackWidth, height: trackHeight }}
+            resizeMode="stretch"
+          />
+          <Animated.View style={[timerStyles.imageClip, imageWidthStyle, { height: trackHeight }]}>
+            <Image
+              source={require('../assets/img/time_f.png')}
+              style={{ width: trackWidth, height: trackHeight, transform: [{ scaleY: 0.9 }, { translateY: -trackHeight * 0.03 }] }}
+              resizeMode="stretch"
+            />
+          </Animated.View>
+          <View style={{ position: 'absolute', left: 14, top: -10, width: GAUGE_OFFSET, height: trackHeight, justifyContent: 'center', alignItems: 'center' }}>
+            <Text style={{ fontSize: trackHeight * 0.3, fontWeight: '900', color: '#5A3A1A', textShadowColor: 'rgba(255,255,255,0.6)', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 2 }}>{timeDisplay}s</Text>
           </View>
         </View>
+      </View>
     </View>
   );
 });
@@ -1163,60 +1187,17 @@ const timerStyles = StyleSheet.create({
     flexDirection: 'row', 
     alignItems: 'center',
     paddingHorizontal: 12,
-    paddingVertical: 6,
+    paddingVertical: -2,
   },
   track: {
     flex: 1,
-    height: 32,
-    backgroundColor: '#E8E8E8',
-    borderRadius: 16,
-    overflow: 'hidden',
     position: 'relative',
-    borderWidth: 2,
-    borderColor: '#FFF',
   },
-  fill: {
-    height: '100%',
-    borderRadius: 14,
+  imageClip: {
+    overflow: 'hidden',
     position: 'absolute',
     left: 0,
     top: 0,
-  },
-  fillHighlight: {
-    position: 'absolute',
-    top: 4,
-    left: 8,
-    right: 8,
-    height: 6,
-    backgroundColor: 'rgba(255,255,255,0.4)',
-    borderRadius: 3,
-  },
-  labelOverlay: {
-    position: 'absolute',
-    left: 14,
-    top: 0,
-    bottom: 0,
-    justifyContent: 'center',
-  },
-  labelText: {
-    color: '#FFF',
-    fontSize: 13,
-    fontWeight: '900',
-    textShadowColor: 'rgba(0,0,0,0.35)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 2,
-  },
-  timeOverlay: { 
-    position: 'absolute',
-    right: 14,
-    top: 0,
-    bottom: 0,
-    justifyContent: 'center',
-  },
-  timeText: { 
-    color: '#666', 
-    fontSize: 13, 
-    fontWeight: '900',
   },
   bonusText: {
     position: 'absolute',
@@ -1473,42 +1454,33 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   bigCharacter: { fontSize: 52 },
-  // SVG bubble for mobile (iOS/Android)
-  svgBubbleContainer: {
+  bubbleContainer: {
     position: 'absolute',
-    top: -60,
-    right: 40,
-    width: 70,
-    height: 50,
+    top: -80,
+    right: 30,
+    width: 140,
+    height: 105,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  svgBubbleContainerLarge: {
-    width: 80,
-    height: 70,
-  },
-  bubbleBg: {
-    position: 'absolute',
-    width: '100%',
-    height: '85%',
-    backgroundColor: '#FF6B42',
-    borderRadius: 12,
-    top: 0,
+  bubbleContainerLarge: {
+    width: 160,
+    height: 125,
   },
   bubbleContent: {
     position: 'absolute',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 0,
+    marginBottom: 12,
   },
-  svgBubbleText: { 
-    fontSize: 27, 
-    fontWeight: '900', 
-    color: '#FFF',
-    lineHeight: 28,
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 10,
-    textShadowColor: '#000',
+  bubbleText: { 
+    fontSize: 28,
+    fontFamily: 'Fredoka_700Bold',
+    color: '#8B5A3C',
+    textShadowColor: 'rgba(0,0,0,0.4)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 3,
   },
   bubbleFruitRow: {
     alignItems: 'center',
@@ -1518,46 +1490,6 @@ const styles = StyleSheet.create({
   bubbleFruitType: {
     position: 'absolute',
     fontSize: 14,
-  },
-  // Cartoon style bubble
-  cartoonBubble: { 
-    backgroundColor: '#FF6B42', 
-    borderRadius: 20, 
-    paddingHorizontal: 22, 
-    paddingVertical: 14, 
-    minWidth: 70, 
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginLeft: 8,
-    marginBottom: 10,
-    position: 'relative',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
-  },
-  cartoonBubbleText: { 
-    fontSize: 28, 
-    fontWeight: '900', 
-    color: '#FFF',
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 3,
-    textShadowColor: '#000',
-  },
-  // Simple tail pointing left
-  cartoonBubbleTail: {
-    position: 'absolute',
-    left: -8,
-    bottom: 12,
-    width: 0,
-    height: 0,
-    borderTopWidth: 6,
-    borderTopColor: 'transparent',
-    borderBottomWidth: 6,
-    borderBottomColor: 'transparent',
-    borderRightWidth: 10,
-    borderRightColor: '#FF6B42',
   },
   modalOverlay: {
     flex: 1,

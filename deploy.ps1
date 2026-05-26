@@ -12,7 +12,8 @@ New-Item -ItemType File -Path "docs\.nojekyll" -Force | Out-Null
 # Fix viewport meta tag
 Write-Host "Fixing viewport..." -ForegroundColor Cyan
 $html = [System.IO.File]::ReadAllText("$PWD\docs\index.html")
-$html = $html -replace 'content="width=device-width, initial-scale=1[^"]*"', 'content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"'
+$html = $html -replace 'content="width=device-width, initial-scale=1[^"]*"', 'content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"'
+$html = $html -replace '(overflow: hidden;\s*})', "overflow: hidden;`n        padding-top: env(safe-area-inset-top);`n        padding-bottom: env(safe-area-inset-bottom);`n        padding-left: env(safe-area-inset-left);`n        padding-right: env(safe-area-inset-right);`n      }"
 [System.IO.File]::WriteAllText("$PWD\docs\index.html", $html)
 
 # Fix script path in index.html for GitHub Pages /fruitBox/ subpath
