@@ -211,10 +211,7 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
 
   const GRID_SIZE = mapSize;
   const appWidth = Platform.OS === 'web' ? Math.min(width, 430) : width;
-  const [boardHeight, setBoardHeight] = useState(0);
-  const cellSizeByWidth = Math.floor((appWidth * (1 - GRID_PADDING_HORIZONTAL * 2 / 100) - (CELL_MARGIN * 2 * GRID_SIZE)) / GRID_SIZE);
-  const cellSizeByHeight = boardHeight > 0 ? Math.floor((boardHeight - (CELL_MARGIN * 2 * GRID_SIZE)) / GRID_SIZE) : cellSizeByWidth;
-  const CELL_SIZE = Math.max(1, Math.min(cellSizeByWidth, cellSizeByHeight));
+  const CELL_SIZE = Math.floor((appWidth * (1 - GRID_PADDING_HORIZONTAL * 2 / 100) - (CELL_MARGIN * 2 * GRID_SIZE)) / GRID_SIZE);
   
   const [board, setBoard] = useState(() => generateBoard(0, GRID_SIZE, generateCustomerRequest(0)));
   const boardRef = useRef(null);
@@ -837,7 +834,10 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
 
   return (
     <>
-    <View style={[styles.container, { backgroundColor: theme.bg, paddingBottom: insets.bottom }]}>
+    <View style={[styles.topSectionBg, { height: height + insets.bottom }]}>
+      <Image source={bgImage} style={[styles.topBgImage, { height: height + insets.bottom }]} resizeMode="stretch" />
+    </View>
+    <View style={[styles.container, { paddingBottom: insets.bottom }]}>
       <View style={[styles.header, { zIndex: 20, marginTop: height * 0.20 }]}>
         <Pressable style={styles.backBtn} onPress={onBackToStart}>
           <Image source={require('../assets/img/back_arrow.png')} style={{ width: 24, height: 24, tintColor: '#000' }} resizeMode="contain" />
@@ -869,14 +869,6 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
         </Animated.View>
       )}
 
-      {/* Top Section Background */}
-      <View style={[styles.topSectionBg, { height: height + insets.bottom }]}>
-        <Image 
-          source={bgImage} 
-          style={[styles.topBgImage, { height: height + insets.bottom }]} 
-          resizeMode="stretch"
-        />
-      </View>
 
       {/* Worker and Customer */}
       <View style={styles.charactersRow}>
@@ -949,7 +941,7 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
         </View>
       )}
 
-      <GestureHandlerRootView style={[styles.board, gameOver && styles.boardDisabled]} onLayout={e => setBoardHeight(e.nativeEvent.layout.height)}>
+      <GestureHandlerRootView style={[styles.board, gameOver && styles.boardDisabled]}>
         <GestureDetector gesture={panGesture}>
         <View style={styles.gridWrapper}>
           {assistMode && assistCombos.map((combo, i) => (
@@ -1326,7 +1318,7 @@ const Cell = React.memo(function Cell({ cell, anims, isSelected, shakeAnim, cell
 });
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FFF8E7' },
+  container: { flex: 1, backgroundColor: 'transparent' },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, marginTop: '20%', marginBottom: 2 },
   backBtn: { width: 40, height: 40, backgroundColor: 'transparent', borderRadius: 12, justifyContent: 'center', alignItems: 'center', opacity: 0 },
   title: { fontSize: 24, fontWeight: '900', color: '#FF8C42', letterSpacing: 2 },
