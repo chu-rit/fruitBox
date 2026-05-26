@@ -8,9 +8,20 @@
     <!-- The `react-native-web` recommended style reset: https://necolas.github.io/react-native-web/docs/setup/#root-element -->
     <style id="expo-reset">
       /* These styles make the body full-height */
-      html, body { height: 100%; margin: 0; padding: 0; }
-      body { overflow: hidden; }
-      #root { display: flex; height: 100%; flex: 1; }
+      html,
+      body {
+        height: 100%;
+      }
+      /* These styles disable body scrolling if you are using <ScrollView> */
+      body {
+        overflow: hidden;
+      }
+      /* These styles make the root element full-height */
+      #root {
+        display: flex;
+        height: 100%;
+        flex: 1;
+      }
     </style>
   <meta name="theme-color" content="#FF4444">
 <meta name="description" content="Collect & Stack fruits!">
@@ -23,6 +34,6 @@
     </noscript>
     <!-- The root element for your Expo app. -->
     <div id="root"></div>
-  <script src="/fruitBox/_expo/static/js/web/AppEntry-555cee7ed9d55af7538eaa16f398b17b.js" defer></script>
+  <script src="/fruitBox/_expo/static/js/web/AppEntry-02d3f492b5353160af444970c2a1e789.js" defer></script>
 <script>if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('/fruitBox/sw.js'); }); }</script></body>
 </html>

@@ -949,7 +949,7 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
         </View>
       )}
 
-      <GestureHandlerRootView style={[styles.board, gameOver && styles.boardDisabled, { paddingBottom: insets.bottom }]}>
+      <GestureHandlerRootView style={[styles.board, gameOver && styles.boardDisabled]}>
         <GestureDetector gesture={panGesture}>
         <View style={styles.gridWrapper}>
           {assistMode && assistCombos.map((combo, i) => (
