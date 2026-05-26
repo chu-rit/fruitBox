@@ -1,5 +1,5 @@
 ﻿import React, { useState, useRef, useCallback, useEffect, useMemo } from 'react';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   View,
@@ -214,7 +214,7 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
   const [boardHeight, setBoardHeight] = useState(0);
   const cellSizeByWidth = Math.floor((appWidth * (1 - GRID_PADDING_HORIZONTAL * 2 / 100) - (CELL_MARGIN * 2 * GRID_SIZE)) / GRID_SIZE);
   const cellSizeByHeight = boardHeight > 0 ? Math.floor((boardHeight - (CELL_MARGIN * 2 * GRID_SIZE)) / GRID_SIZE) : cellSizeByWidth;
-  const CELL_SIZE = Math.min(cellSizeByWidth, cellSizeByHeight);
+  const CELL_SIZE = Math.max(1, Math.min(cellSizeByWidth, cellSizeByHeight));
   
   const [board, setBoard] = useState(() => generateBoard(0, GRID_SIZE, generateCustomerRequest(0)));
   const boardRef = useRef(null);
@@ -837,7 +837,7 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
 
   return (
     <>
-    <View style={[styles.container, { backgroundColor: theme.bg }]}>
+    <View style={[styles.container, { backgroundColor: theme.bg, paddingBottom: insets.bottom }]}>
       <View style={[styles.header, { zIndex: 20, marginTop: height * 0.20 }]}>
         <Pressable style={styles.backBtn} onPress={onBackToStart}>
           <Image source={require('../assets/img/back_arrow.png')} style={{ width: 24, height: 24, tintColor: '#000' }} resizeMode="contain" />

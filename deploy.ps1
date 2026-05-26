@@ -9,10 +9,12 @@ npx expo export --platform web --output-dir docs
 Write-Host "Creating .nojekyll..." -ForegroundColor Cyan
 New-Item -ItemType File -Path "docs\.nojekyll" -Force | Out-Null
 
-# Fix viewport meta tag
+# Fix viewport meta tag and CSS reset
 Write-Host "Fixing viewport..." -ForegroundColor Cyan
 $html = [System.IO.File]::ReadAllText("$PWD\docs\index.html")
 $html = $html -replace 'content="width=device-width, initial-scale=1[^"]*"', 'content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"'
+$cssReset = "      html, body { height: 100%; margin: 0; padding: 0; }`n      body { overflow: hidden; }`n      #root { display: flex; height: 100%; flex: 1; }"
+$html = $html -replace '(?s)<style id="expo-reset">.*?</style>', "<style id=`"expo-reset`">`n$cssReset`n    </style>"
 [System.IO.File]::WriteAllText("$PWD\docs\index.html", $html)
 
 # Fix script path in index.html for GitHub Pages /fruitBox/ subpath
