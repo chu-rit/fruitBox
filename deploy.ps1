@@ -9,22 +9,47 @@ npx expo export --platform web --output-dir docs
 Write-Host "Creating .nojekyll..." -ForegroundColor Cyan
 New-Item -ItemType File -Path "docs\.nojekyll" -Force | Out-Null
 
+# Fix viewport meta tag
+Write-Host "Fixing viewport..." -ForegroundColor Cyan
+$html = [System.IO.File]::ReadAllText("$PWD\docs\index.html")
+$html = $html -replace 'content="width=device-width, initial-scale=1[^"]*"', 'content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"'
+[System.IO.File]::WriteAllText("$PWD\docs\index.html", $html)
+
 # Fix script path in index.html for GitHub Pages /fruitBox/ subpath
 Write-Host "Fixing index.html script path..." -ForegroundColor Cyan
-$html = Get-Content "docs\index.html" -Raw
+$html = [System.IO.File]::ReadAllText("$PWD\docs\index.html")
 $fixed = $html -replace 'src="/_expo/', 'src="/fruitBox/_expo/'
 $fixed = $fixed -replace 'src="_expo/', 'src="/fruitBox/_expo/'
-Set-Content "docs\index.html" $fixed -NoNewline
+[System.IO.File]::WriteAllText("$PWD\docs\index.html", $fixed)
 
 # Fix asset paths in JS bundle (images referenced as /assets/...)
 Write-Host "Fixing asset paths in JS bundle..." -ForegroundColor Cyan
-$jsFile = Get-ChildItem "docs\_expo\static\js\web\AppEntry-*.js" | Select-Object -First 1
+$jsFile = Get-ChildItem -Path "docs\_expo\static\js\web" -Filter "AppEntry-*.js" | Select-Object -First 1
 if ($jsFile) {
     $js = [System.IO.File]::ReadAllText($jsFile.FullName)
     $js = $js -replace '"/assets/', '"/fruitBox/assets/'
     $js = $js -replace '"assets/', '"/fruitBox/assets/'
     [System.IO.File]::WriteAllText($jsFile.FullName, $js)
     Write-Host "Fixed: $($jsFile.Name)" -ForegroundColor Yellow
+}
+
+# Copy font files referenced by the bundle (with hashed filename)
+Write-Host "Copying font files..." -ForegroundColor Cyan
+$jsFile2 = Get-ChildItem -Path "docs\_expo\static\js\web" -Filter "AppEntry-*.js" | Select-Object -First 1
+if ($jsFile2) {
+    $jsContent = [System.IO.File]::ReadAllText($jsFile2.FullName)
+    $fontMatches = [regex]::Matches($jsContent, 'node_modules/@expo-google-fonts/fredoka/([^/]+)/([^"]+\.ttf)')
+    foreach ($m in $fontMatches) {
+        $subdir = $m.Groups[1].Value
+        $hashedName = $m.Groups[2].Value
+        $srcTtf = Get-ChildItem -Path "node_modules\@expo-google-fonts\fredoka\$subdir" -Filter "*.ttf" | Select-Object -First 1
+        if ($srcTtf) {
+            $dstDir = "docs\assets\node_modules\@expo-google-fonts\fredoka\$subdir"
+            New-Item -ItemType Directory -Path $dstDir -Force | Out-Null
+            Copy-Item $srcTtf.FullName -Destination "$dstDir\$hashedName" -Force
+            Write-Host "Font copied: $hashedName" -ForegroundColor Yellow
+        }
+    }
 }
 
 
