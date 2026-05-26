@@ -834,7 +834,7 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
 
   return (
     <>
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.bg }]} edges={[]}>
+    <View style={[styles.container, { backgroundColor: theme.bg }]}>
       <View style={[styles.header, { zIndex: 20 }]}>
         <Pressable style={styles.backBtn} onPress={onBackToStart}>
           <Image source={require('../assets/img/back_arrow.png')} style={{ width: 24, height: 24, tintColor: '#000' }} resizeMode="contain" />
@@ -946,7 +946,7 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
         </View>
       )}
 
-      <GestureHandlerRootView style={[styles.board, gameOver && styles.boardDisabled, { paddingBottom: insets.bottom }]}>
+      <GestureHandlerRootView style={[styles.board, gameOver && styles.boardDisabled, { marginBottom: insets.bottom }]}>
         <GestureDetector gesture={panGesture}>
         <View style={styles.gridWrapper}>
           {assistMode && assistCombos.map((combo, i) => (
@@ -990,7 +990,7 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
           </View>
         </GestureDetector>
       </GestureHandlerRootView>
-    </SafeAreaView>
+    </View>
     
     {/* Game Over Modal */}
     <Modal visible={showGameOverModal} transparent animationType="fade">
@@ -1323,7 +1323,7 @@ const Cell = React.memo(function Cell({ cell, anims, isSelected, shakeAnim, cell
 });
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FFF8E7', paddingTop: 12 },
+  container: { flex: 1, backgroundColor: '#FFF8E7' },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, marginTop: '20%', marginBottom: 2 },
   backBtn: { width: 40, height: 40, backgroundColor: 'transparent', borderRadius: 12, justifyContent: 'center', alignItems: 'center', opacity: 0 },
   title: { fontSize: 24, fontWeight: '900', color: '#FF8C42', letterSpacing: 2 },
