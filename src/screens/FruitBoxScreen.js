@@ -211,9 +211,9 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
 
   const GRID_SIZE = mapSize;
   const appWidth = Platform.OS === 'web' ? Math.min(width, 430) : width;
+  const [boardHeight, setBoardHeight] = useState(0);
   const cellSizeByWidth = Math.floor((appWidth * (1 - GRID_PADDING_HORIZONTAL * 2 / 100) - (CELL_MARGIN * 2 * GRID_SIZE)) / GRID_SIZE);
-  const availableGridHeight = height - height * 0.20 - 200 - 60 - insets.bottom - 40;
-  const cellSizeByHeight = Math.floor((availableGridHeight - (CELL_MARGIN * 2 * GRID_SIZE)) / GRID_SIZE);
+  const cellSizeByHeight = boardHeight > 0 ? Math.floor((boardHeight - (CELL_MARGIN * 2 * GRID_SIZE)) / GRID_SIZE) : cellSizeByWidth;
   const CELL_SIZE = Math.min(cellSizeByWidth, cellSizeByHeight);
   
   const [board, setBoard] = useState(() => generateBoard(0, GRID_SIZE, generateCustomerRequest(0)));
@@ -949,7 +949,7 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
         </View>
       )}
 
-      <GestureHandlerRootView style={[styles.board, gameOver && styles.boardDisabled]}>
+      <GestureHandlerRootView style={[styles.board, gameOver && styles.boardDisabled]} onLayout={e => setBoardHeight(e.nativeEvent.layout.height)}>
         <GestureDetector gesture={panGesture}>
         <View style={styles.gridWrapper}>
           {assistMode && assistCombos.map((combo, i) => (
