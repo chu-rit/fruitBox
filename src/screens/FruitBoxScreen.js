@@ -834,10 +834,7 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
 
   return (
     <>
-    <View style={[styles.topSectionBg, { height: height + insets.bottom }]}>
-      <Image source={bgImage} style={[styles.topBgImage, { height: height + insets.bottom }]} resizeMode="stretch" />
-    </View>
-    <View style={[styles.container, { paddingBottom: insets.bottom }]}>
+    <View style={[styles.container, { height: height }]}>
       <View style={[styles.header, { zIndex: 20, marginTop: height * 0.20 }]}>
         <Pressable style={styles.backBtn} onPress={onBackToStart}>
           <Image source={require('../assets/img/back_arrow.png')} style={{ width: 24, height: 24, tintColor: '#000' }} resizeMode="contain" />
@@ -861,6 +858,11 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
       {showScoreBonus && (
         <Text style={styles.scoreBonusText}>+{showScoreBonus.amount}점</Text>
       )}
+
+      {/* Top Section Background */}
+      <View style={[styles.topSectionBg, { height: height }]}>
+        <Image source={bgImage} style={[styles.topBgImage, { height: height }]} resizeMode="stretch" />
+      </View>
 
       {/* Level Up Banner */}
       {showLevelUp && (

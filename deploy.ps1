@@ -13,7 +13,7 @@ New-Item -ItemType File -Path "docs\.nojekyll" -Force | Out-Null
 Write-Host "Fixing viewport..." -ForegroundColor Cyan
 $html = [System.IO.File]::ReadAllText("$PWD\docs\index.html")
 $html = $html -replace 'content="width=device-width, initial-scale=1[^"]*"', 'content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"'
-$cssReset = "      html, body { height: 100%; margin: 0; padding: 0; background-color: #000; }`n      body { overflow: hidden; }`n      #root { display: flex; height: 100%; flex: 1; }"
+$cssReset = "      html, body { height: 100%; margin: 0; padding: 0; background-color: #FFF8E7; }`n      body { overflow: hidden; }`n      #root { display: flex; height: 100%; flex: 1; }"
 $html = $html -replace '(?s)<style id="expo-reset">.*?</style>', "<style id=`"expo-reset`">`n$cssReset`n    </style>"
 [System.IO.File]::WriteAllText("$PWD\docs\index.html", $html)
 
