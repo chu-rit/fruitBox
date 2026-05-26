@@ -1,4 +1,5 @@
 import React from 'react';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   View,
   Text,
@@ -18,7 +19,7 @@ export default function SettingsScreen({ onBack, mapSize, onChangeMapSize, bgmOn
   const mapSizes = [5, 6, 7, 8];
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity style={styles.backBtn} onPress={() => { playStartSFX(); onBack(); }}>
@@ -100,7 +101,7 @@ export default function SettingsScreen({ onBack, mapSize, onChangeMapSize, bgmOn
       <View style={styles.footer}>
         <Text style={styles.version}>v1.0.0</Text>
       </View>
-    </View>
+    </SafeAreaView>
   );
 }
 

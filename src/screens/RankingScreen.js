@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   View,
   Text,
@@ -49,7 +50,7 @@ export default function RankingScreen({ onBack }) {
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity style={styles.backButton} onPress={onBack}>
@@ -114,7 +115,7 @@ export default function RankingScreen({ onBack }) {
       <View style={styles.footer}>
         <Text style={styles.version}>v1.0.0</Text>
       </View>
-    </View>
+    </SafeAreaView>
   );
 }
 

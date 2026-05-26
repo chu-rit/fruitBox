@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   View,
   Text,
@@ -45,7 +46,7 @@ export default function StartScreen({ onStart, onSettings, onRanking, onLogoPres
   const [showCredits, setShowCredits] = useState(false);
 
   return (
-    <View style={[styles.container, isFruitMode && styles.containerFruit]}>
+    <SafeAreaView style={[styles.container, isFruitMode && styles.containerFruit]} edges={['top', 'bottom']}>
 
       {/* Background fruit icons */}
       {BG_FRUITS.map(({ fruit, size, top, left, right, rotate, opacity }, i) => (
@@ -133,7 +134,7 @@ export default function StartScreen({ onStart, onSettings, onRanking, onLogoPres
           </View>
         </TouchableOpacity>
       </Modal>
-    </View>
+    </SafeAreaView>
   );
 }
 

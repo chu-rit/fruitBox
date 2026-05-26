@@ -1,4 +1,5 @@
 ﻿import React, { useState, useRef, useCallback, useEffect, useMemo } from 'react';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   View,
@@ -829,10 +830,11 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
 
   const level = useMemo(() => getLevel(score), [score]);
   const theme = useMemo(() => getTheme(level), [level]);
+  const insets = useSafeAreaInsets();
 
   return (
     <>
-    <View style={[styles.container, { backgroundColor: theme.bg }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.bg }]} edges={[]}>
       <View style={[styles.header, { zIndex: 20 }]}>
         <Pressable style={styles.backBtn} onPress={onBackToStart}>
           <Image source={require('../assets/img/back_arrow.png')} style={{ width: 24, height: 24, tintColor: '#000' }} resizeMode="contain" />
@@ -944,7 +946,7 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
         </View>
       )}
 
-      <GestureHandlerRootView style={[styles.board, gameOver && styles.boardDisabled]}>
+      <GestureHandlerRootView style={[styles.board, gameOver && styles.boardDisabled, { paddingBottom: insets.bottom }]}>
         <GestureDetector gesture={panGesture}>
         <View style={styles.gridWrapper}>
           {assistMode && assistCombos.map((combo, i) => (
@@ -988,7 +990,7 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
           </View>
         </GestureDetector>
       </GestureHandlerRootView>
-    </View>
+    </SafeAreaView>
     
     {/* Game Over Modal */}
     <Modal visible={showGameOverModal} transparent animationType="fade">
