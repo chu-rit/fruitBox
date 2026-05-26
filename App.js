@@ -1,6 +1,7 @@
 import { StyleSheet, View, Platform } from 'react-native';
 import { useEffect } from 'react';
 import { Asset } from 'expo-asset';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import Game from './src/Game';
 import { preloadSFX } from './src/services/sfxService';
 import { setBGMEnabled } from './src/services/musicService';
@@ -55,9 +56,11 @@ export default function App() {
   }, []);
 
   return (
-    <View style={styles.container}>
-      <Game />
-    </View>
+    <SafeAreaProvider>
+      <View style={styles.container}>
+        <Game />
+      </View>
+    </SafeAreaProvider>
   );
 }
 
