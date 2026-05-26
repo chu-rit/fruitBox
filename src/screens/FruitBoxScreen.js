@@ -65,6 +65,10 @@ const getCustomerImg = (request, seed) => {
 };
 
 const { width, height } = Dimensions.get('window');
+const aspectRatio = height / width;
+const bgImage = aspectRatio > 1.9
+  ? require('../assets/img/BG(9x20).png')
+  : require('../assets/img/BG(9x16).png');
 const DEFAULT_GRID_SIZE = 6;
 const FRUITS = ['apple', 'orange', 'grape', 'pear', 'watermelon', 'strawberry', 'peach', 'pineapple'];
 
@@ -707,8 +711,10 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
     }, 200);
   }, [GRID_SIZE, CELL_SIZE]);
 
+  const gridPaddingLeft = appWidth * GRID_PADDING_HORIZONTAL / 100;
   const getCellFromPos = (x, y) => {
-    const col = Math.floor(x / (CELL_SIZE + CELL_MARGIN * 2));
+    const adjustedX = x - gridPaddingLeft;
+    const col = Math.floor(adjustedX / (CELL_SIZE + CELL_MARGIN * 2));
     const row = Math.floor(y / (CELL_SIZE + CELL_MARGIN * 2));
     return {
       row: Math.max(0, Math.min(GRID_SIZE - 1, row)),
@@ -860,7 +866,7 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
       {/* Top Section Background */}
       <View style={styles.topSectionBg}>
         <Image 
-          source={require('../assets/img/BG2.png')} 
+          source={bgImage} 
           style={styles.topBgImage} 
           resizeMode="stretch"
         />
@@ -915,7 +921,7 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
         </View>
       </View>
 
-      <TimerBar timeLeft={timeLeft} maxTime={getMaxTime()} flashValue={timerBarFlash} showTimeBonus={showTimeBonus} />
+      <TimerBar timeLeft={timeLeft} maxTime={getMaxTime()} flashValue={timerBarFlash} showTimeBonus={showTimeBonus} paddingH={gridPaddingLeft} />
 
       {!gameOver && possibleCombinations === 0 && (
         <View style={styles.noComboBanner}>
@@ -945,7 +951,7 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
               key={i}
               pointerEvents="none"
               style={[styles.assistOverlay, {
-                left: combo.c1 * (CELL_SIZE + CELL_MARGIN * 2),
+                left: combo.c1 * (CELL_SIZE + CELL_MARGIN * 2) + gridPaddingLeft,
                 top: combo.r1 * (CELL_SIZE + CELL_MARGIN * 2),
                 width: (combo.c2 - combo.c1 + 1) * (CELL_SIZE + CELL_MARGIN * 2) - CELL_MARGIN * 2,
                 height: (combo.r2 - combo.r1 + 1) * (CELL_SIZE + CELL_MARGIN * 2) - CELL_MARGIN * 2,
@@ -1108,7 +1114,7 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
   );
 }
 
-const TimerBar = React.memo(function TimerBar({ timeLeft, maxTime, flashValue, showTimeBonus }) {
+const TimerBar = React.memo(function TimerBar({ timeLeft, maxTime, flashValue, showTimeBonus, paddingH = 0 }) {
   const [timeDisplay, setTimeDisplay] = useState(maxTime);
 
   useAnimatedReaction(
@@ -1135,7 +1141,7 @@ const TimerBar = React.memo(function TimerBar({ timeLeft, maxTime, flashValue, s
       {showTimeBonus && (
         <Text style={timerStyles.bonusText}>+{Math.round(showTimeBonus.amount)}초</Text>
       )}
-      <View style={timerStyles.container}>
+      <View style={[timerStyles.container, { paddingHorizontal: paddingH }]}>
           <View style={timerStyles.track}>
             <Animated.View style={[timerStyles.fill, fillStyle]}>
               <View style={timerStyles.fillHighlight} />
@@ -1391,6 +1397,7 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: '900',
     color: '#7A4010',
+    textAlign: 'center',
     textShadowColor: 'rgba(120,60,0,0.2)',
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 1,
@@ -1408,7 +1415,7 @@ const styles = StyleSheet.create({
   // Background Numbers (Level & Score on BG2) - Individual Position Control
   bgLevelNumber: {
     position: 'absolute',
-    top: '15.5%',
+    top: '17%',
     left: '34%',
     width: width * 0.10,
     fontSize: width * 0.05,
@@ -1422,8 +1429,8 @@ const styles = StyleSheet.create({
   },
   bgScoreNumber: {
     position: 'absolute',
-    top: '15.5%',
-    left: '45.5%',
+    top: '17%',
+    left: '48%',
     width: width * 0.12,
     fontSize: width * 0.05,
     fontFamily: 'Fredoka_700Bold',
@@ -1431,7 +1438,7 @@ const styles = StyleSheet.create({
     textShadowOffset: { width: 1, height: 1 },
     textShadowRadius: 3,
     zIndex: 10,
-    textAlign: 'right',
+    textAlign: 'center',
   },
   
   // Top Section Background (full screen)
@@ -1439,7 +1446,7 @@ const styles = StyleSheet.create({
   topBgImage: { width: width, height: height },
 
   // Characters (Worker & Customer)
-  charactersRow: { flexDirection: 'row', justifyContent: 'space-around', alignItems: 'flex-end', paddingHorizontal: 20, paddingBottom: 0, marginBottom: 6, marginTop: 60, position: 'relative', overflow: 'hidden', borderRadius: 16, height: 200 },
+  charactersRow: { flexDirection: 'row', justifyContent: 'space-around', alignItems: 'flex-end', paddingHorizontal: 20, paddingBottom: 0, marginBottom: 6, marginTop: 60, position: 'relative', borderRadius: 16, height: 200 },
   characterWrapper: { 
     alignItems: 'center', 
     flex: 1,
