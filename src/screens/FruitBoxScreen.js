@@ -834,8 +834,8 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
 
   return (
     <>
-    <View style={[styles.container, { backgroundColor: theme.bg }]}>
-      <View style={[styles.header, { zIndex: 20 }]}>
+    <View style={[styles.container, { backgroundColor: theme.bg, paddingTop: insets.top, paddingBottom: insets.bottom }]}>
+      <View style={[styles.header, { zIndex: 20, marginTop: Math.max(0, height * 0.20 - insets.top) }]}>
         <Pressable style={styles.backBtn} onPress={onBackToStart}>
           <Image source={require('../assets/img/back_arrow.png')} style={{ width: 24, height: 24, tintColor: '#000' }} resizeMode="contain" />
         </Pressable>
@@ -946,7 +946,7 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
         </View>
       )}
 
-      <GestureHandlerRootView style={[styles.board, gameOver && styles.boardDisabled, { marginBottom: insets.bottom }]}>
+      <GestureHandlerRootView style={[styles.board, gameOver && styles.boardDisabled]}>
         <GestureDetector gesture={panGesture}>
         <View style={styles.gridWrapper}>
           {assistMode && assistCombos.map((combo, i) => (
