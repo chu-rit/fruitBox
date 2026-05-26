@@ -835,7 +835,7 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
   return (
     <>
     <View style={styles.container}>
-      <View style={[styles.header, { zIndex: 20, marginTop: height * 0.20 }]}>
+      <View style={[styles.header, { zIndex: 20, marginTop: height * 0.15 }]}>
         <Pressable style={styles.backBtn} onPress={onBackToStart}>
           <Image source={require('../assets/img/back_arrow.png')} style={{ width: 24, height: 24, tintColor: '#000' }} resizeMode="contain" />
         </Pressable>
@@ -850,8 +850,8 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
         </View>
       </View>
 
-      {/* Background: BOT anchored to bottom, TOP anchored to top */}
-      <Image source={require('../assets/img/BG_BOT.png')} style={styles.bgBot} resizeMode="stretch" />
+      {/* Background: BOT fills full screen, TOP anchored to top */}
+      <Image source={require('../assets/img/BG_BOT.png')} style={[styles.bgBot, { height: height + insets.top + insets.bottom }]} resizeMode="stretch" />
       <Image source={require('../assets/img/BG_TOP.png')} style={styles.bgTop} resizeMode="stretch" />
 
       {/* Score + Level Numbers on Background */}
@@ -1423,7 +1423,7 @@ const styles = StyleSheet.create({
   },
   
   // Background images
-  bgBot: { position: 'absolute', top: 0, left: 0, width: width, height: height, zIndex: 0 },
+  bgBot: { position: 'absolute', top: 0, left: 0, width: width, zIndex: 0 },
   bgTop: { position: 'absolute', top: 0, left: 0, width: width, height: '50%', zIndex: 0 },
 
   // Characters (Worker & Customer)
