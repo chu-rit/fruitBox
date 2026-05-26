@@ -834,7 +834,7 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
 
   return (
     <>
-    <View style={[styles.container, { height: height }]}>
+    <View style={styles.container}>
       <View style={[styles.header, { zIndex: 20, marginTop: height * 0.20 }]}>
         <Pressable style={styles.backBtn} onPress={onBackToStart}>
           <Image source={require('../assets/img/back_arrow.png')} style={{ width: 24, height: 24, tintColor: '#000' }} resizeMode="contain" />
@@ -859,10 +859,9 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
         <Text style={styles.scoreBonusText}>+{showScoreBonus.amount}점</Text>
       )}
 
-      {/* Top Section Background */}
-      <View style={[styles.topSectionBg, { height: height }]}>
-        <Image source={bgImage} style={[styles.topBgImage, { height: height }]} resizeMode="stretch" />
-      </View>
+      {/* Background: BOT anchored to bottom, TOP anchored to top */}
+      <Image source={require('../assets/img/BG_BOT.png')} style={styles.bgBot} resizeMode="stretch" />
+      <Image source={require('../assets/img/BG_TOP.png')} style={styles.bgTop} resizeMode="stretch" />
 
       {/* Level Up Banner */}
       {showLevelUp && (
@@ -1421,9 +1420,9 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   
-  // Top Section Background (full screen)
-  topSectionBg: { position: 'absolute', top: 0, left: 0, width: width, height: height, zIndex: -1 },
-  topBgImage: { width: width, height: height },
+  // Background images
+  bgBot: { position: 'absolute', bottom: 0, left: 0, width: width, height: '100%', zIndex: -2 },
+  bgTop: { position: 'absolute', top: 0, left: 0, width: width, height: '60%', zIndex: -1 },
 
   // Characters (Worker & Customer)
   charactersRow: { flexDirection: 'row', justifyContent: 'space-around', alignItems: 'flex-end', paddingHorizontal: 20, paddingBottom: 0, marginBottom: 6, marginTop: 60, position: 'relative', borderRadius: 16, height: 200 },
