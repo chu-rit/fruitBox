@@ -97,8 +97,8 @@ self.addEventListener('fetch', (e) => { e.respondWith(fetch(e.request).catch(() 
 Write-Host "Patching index.html for PWA..." -ForegroundColor Cyan
 $html = [System.IO.File]::ReadAllText("$PWD\docs\index.html")
 if ($html -notmatch 'rel="manifest"') {
-  $forceReflowScript = '<script>(function(){function forceReflow(){document.documentElement.style.height=''99.9%'';requestAnimationFrame(function(){document.documentElement.style.height='''';});}window.addEventListener(''load'',function(){setTimeout(forceReflow,100);});})();</script>'
-  $pwaHead = $forceReflowScript + '<link rel="manifest" href="/fruitBox/manifest.json" /><link rel="apple-touch-icon" href="/fruitBox/icon.png" /><meta name="apple-mobile-web-app-capable" content="yes" /><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" /><meta name="apple-mobile-web-app-title" content="FruitBox" /><meta name="mobile-web-app-capable" content="yes" />'
+  $scrollTriggerScript = '<script>(function(){window.addEventListener(''load'',function(){setTimeout(function(){window.dispatchEvent(new Event(''scroll''));},300);});})();</script>'
+  $pwaHead = $scrollTriggerScript + '<link rel="manifest" href="/fruitBox/manifest.json" /><link rel="apple-touch-icon" href="/fruitBox/icon.png" /><meta name="apple-mobile-web-app-capable" content="yes" /><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" /><meta name="apple-mobile-web-app-title" content="FruitBox" /><meta name="mobile-web-app-capable" content="yes" />'
   $swScript = '<script>if(''serviceWorker''in navigator){window.addEventListener(''load'',()=>{navigator.serviceWorker.register(''/fruitBox/sw.js?v=$cacheVersion'');});}</script>'
   $html = $html -replace '</head>', "$pwaHead</head>"
   $html = $html -replace '</body>', "$swScript</body>"
