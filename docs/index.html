@@ -7,10 +7,9 @@
     <title>Fruit Box</title>
     <!-- The `react-native-web` recommended style reset: https://necolas.github.io/react-native-web/docs/setup/#root-element -->
     <style id="expo-reset">
-      :root { --vh: 1vh; }
-      html, body { height: calc(var(--vh) * 100); margin: 0; padding: 0; background-color: #FFF8E7; }
-      body { overflow: hidden; }
-      #root { display: flex; height: calc(var(--vh) * 100); flex: 1; }
+      html, body { height: 100dvh; margin: 0; padding: 0; background-color: #FFF8E7; }
+      body { overflow: auto; overscroll-behavior: none; }
+      #root { display: flex; height: 100dvh; flex: 1; }
     </style>
   <meta name="theme-color" content="#FF4444">
 <meta name="description" content="Collect & Stack fruits!">
@@ -23,6 +22,6 @@
     </noscript>
     <!-- The root element for your Expo app. -->
     <div id="root"></div>
-  <script src="/fruitBox/_expo/static/js/web/AppEntry-148c953290bf51d4ebe2e9d56036cd9f.js" defer></script>
+  <script src="/fruitBox/_expo/static/js/web/AppEntry-2204972c704fc32dfa3ea23c478d36b4.js" defer></script>
 <script>if('serviceWorker'in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('/fruitBox/sw.js?v=$cacheVersion');});}</script></body>
 </html>

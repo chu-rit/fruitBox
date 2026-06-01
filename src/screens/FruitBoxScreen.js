@@ -1379,7 +1379,7 @@ const Cell = React.memo(function Cell({ cell, anims, isSelected, shakeAnim, cell
 });
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: 'transparent', position: 'relative' },
+  container: { flex: 1, minHeight: 0, backgroundColor: 'transparent', position: 'relative' },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, marginTop: '20%', marginBottom: 2 },
   backBtn: { width: 40, height: 40, backgroundColor: 'transparent', borderRadius: 12, justifyContent: 'center', alignItems: 'center', opacity: 0 },
   title: { fontSize: 24, fontWeight: '900', color: '#FF8C42', letterSpacing: 2 },
