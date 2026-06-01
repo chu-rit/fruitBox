@@ -95,7 +95,7 @@ self.addEventListener('fetch', (e) => { e.respondWith(fetch(e.request).catch(() 
 Write-Host "Patching index.html for PWA..." -ForegroundColor Cyan
 $html = [System.IO.File]::ReadAllText("$PWD\docs\index.html")
 if ($html -notmatch 'rel="manifest"') {
-  $vhScript = '<script>(function(){function setVH(){document.documentElement.style.setProperty(''--vh'',(window.innerHeight*0.01)+''px'');}setVH();window.addEventListener(''resize'',setVH);})();</script>'
+  $vhScript = '<script>(function(){function setVH(){document.documentElement.style.setProperty(''--vh'',(window.innerHeight*0.01)+''px'');}setTimeout(function(){requestAnimationFrame(setVH);},100);window.addEventListener(''resize'',setVH);})();</script>'
   $pwaHead = $vhScript + '<link rel="manifest" href="/fruitBox/manifest.json" /><link rel="apple-touch-icon" href="/fruitBox/icon.png" /><meta name="apple-mobile-web-app-capable" content="yes" /><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" /><meta name="apple-mobile-web-app-title" content="FruitBox" /><meta name="mobile-web-app-capable" content="yes" />'
   $swScript = '<script>if(''serviceWorker''in navigator){window.addEventListener(''load'',()=>{navigator.serviceWorker.register(''/fruitBox/sw.js?v=$cacheVersion'');});}</script>'
   $html = $html -replace '</head>', "$pwaHead</head>"
