@@ -15,31 +15,14 @@ import { playStartSFX } from '../services/sfxService';
 
 const { width, height } = Dimensions.get('window');
 
-const FRUIT_IMAGES = {
-  apple: require('../assets/img/apple.png'),
-  orange: require('../assets/img/orange.png'),
-  grape: require('../assets/img/grape.png'),
-  pear: require('../assets/img/pear.png'),
-  watermelon: require('../assets/img/watermelon.png'),
-  strawberry: require('../assets/img/strawberry.png'),
-  peach: require('../assets/img/peach.png'),
-  pineapple: require('../assets/img/pineapple.png'),
-};
+// Background images for different aspect ratios
+const BG_IMAGE_16 = require('../assets/img/ST_BG(16).png');
+const BG_IMAGE_20 = require('../assets/img/ST_BG(20).png');
 
-const LOGO_IMAGE = require('../assets/img/FruitBoxLogo.png');
+// Aspect ratio detection (9:20 vs 9:16)
+const aspectRatio = height / width;
+const is9_20 = aspectRatio > 1.9;
 
-const BG_FRUITS = [
-  { fruit: 'apple',      size: 55, top: height*0.04,  left: width*0.05,  rotate: '-15deg', opacity: 0.18 },
-  { fruit: 'orange',     size: 48, top: height*0.07,  right: width*0.06, rotate: '20deg',  opacity: 0.18 },
-  { fruit: 'grape',      size: 52, top: height*0.17,  left: width*0.72,  rotate: '-8deg',  opacity: 0.15 },
-  { fruit: 'strawberry', size: 44, top: height*0.25,  left: width*0.03,  rotate: '12deg',  opacity: 0.18 },
-  { fruit: 'pear',       size: 50, top: height*0.38,  right: width*0.04, rotate: '-20deg', opacity: 0.15 },
-  { fruit: 'watermelon', size: 60, top: height*0.55,  left: width*0.05,  rotate: '8deg',   opacity: 0.15 },
-  { fruit: 'peach',      size: 46, top: height*0.62,  right: width*0.07, rotate: '15deg',  opacity: 0.18 },
-  { fruit: 'pineapple',  size: 56, top: height*0.72,  left: width*0.68,  rotate: '-10deg', opacity: 0.13 },
-  { fruit: 'apple',      size: 42, top: height*0.80,  left: width*0.07,  rotate: '25deg',  opacity: 0.13 },
-  { fruit: 'orange',     size: 50, top: height*0.85,  right: width*0.10, rotate: '-5deg',  opacity: 0.15 },
-];
 
 export default function StartScreen({ onStart, onSettings, onRanking, onLogoPress, gameMode = 'apple' }) {
   const isFruitMode = gameMode === 'fruit';
@@ -48,31 +31,17 @@ export default function StartScreen({ onStart, onSettings, onRanking, onLogoPres
   return (
     <SafeAreaView style={[styles.container, isFruitMode && styles.containerFruit]} edges={['top', 'bottom']}>
 
-      {/* Background fruit icons */}
-      {BG_FRUITS.map(({ fruit, size, top, left, right, rotate, opacity }, i) => (
-        <Image
-          key={i}
-          source={FRUIT_IMAGES[fruit]}
-          pointerEvents="none"
-          style={[styles.bgFruit, { width: size, height: size, top, left, right, opacity, transform: [{ rotate }] }]}
-          resizeMode="contain"
-        />
-      ))}
+      {/* Background image based on aspect ratio */}
+      <Image 
+        source={is9_20 ? BG_IMAGE_20 : BG_IMAGE_16} 
+        style={styles.bgImage} 
+        resizeMode="cover"
+      />
 
       {/* Title Section */}
       <View style={styles.titleContainer}>
-        <TouchableOpacity style={styles.iconBox} onPress={onLogoPress} activeOpacity={0.8}>
-          <Image source={FRUIT_IMAGES.apple} style={{ width: 72, height: 72 }} resizeMode="contain" />
-        </TouchableOpacity>
-        <Image source={LOGO_IMAGE} style={{ width: 280, height: 132 }} resizeMode="contain" />
-        <Text style={styles.subtitle}>{isFruitMode ? 'Mix & Match' : 'Collect & Stack'}</Text>
-        <View style={styles.fruitRow}>
-          <Image source={FRUIT_IMAGES.orange} style={{ width: 28, height: 28 }} resizeMode="contain" />
-          <Image source={FRUIT_IMAGES.grape} style={{ width: 28, height: 28 }} resizeMode="contain" />
-          <Image source={FRUIT_IMAGES.strawberry} style={{ width: 28, height: 28 }} resizeMode="contain" />
-          <Image source={FRUIT_IMAGES.pear} style={{ width: 28, height: 28 }} resizeMode="contain" />
-          <Image source={FRUIT_IMAGES.watermelon} style={{ width: 28, height: 28 }} resizeMode="contain" />
-        </View>
+        
+        
       </View>
 
       {/* Menu Buttons */}
@@ -94,13 +63,15 @@ export default function StartScreen({ onStart, onSettings, onRanking, onLogoPres
       )}
       </View>
 
-      {/* Footer */}
+      {/* Version */}
       <View style={styles.footer}>
         <Text style={styles.version}>v1.0.5</Text>
-        <TouchableOpacity onPress={() => setShowCredits(true)} style={styles.creditsBtn}>
-          <Text style={styles.creditsText}>Credits</Text>
-        </TouchableOpacity>
       </View>
+
+      {/* Credits at bottom */}
+      <TouchableOpacity onPress={() => setShowCredits(true)} style={styles.creditsContainer}>
+        <Text style={styles.creditsText}>Credits</Text>
+      </TouchableOpacity>
 
       {/* Credits Modal */}
       <Modal transparent visible={showCredits} animationType="fade" onRequestClose={() => setShowCredits(false)}>
@@ -146,8 +117,13 @@ const styles = StyleSheet.create({
   containerFruit: {
     backgroundColor: '#FFF5E6',
   },
-  bgFruit: {
+  bgImage: {
     position: 'absolute',
+    top: 0,
+    left: 0,
+    width: width,
+    height: height,
+    zIndex: 0,
   },
   titleContainer: {
     flex: 1,
@@ -155,98 +131,79 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingTop: height * 0.08,
   },
-  iconBox: {
-    width: 110,
-    height: 110,
-    backgroundColor: '#FFF',
-    borderRadius: 28,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 18,
-    shadowColor: '#FF8C42',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.2,
-    shadowRadius: 12,
-    elevation: 8,
-  },
-  subtitle: {
-    fontSize: 15,
-    color: '#8B7355',
-    letterSpacing: 2,
-    marginBottom: 14,
-  },
-  fruitRow: {
-    flexDirection: 'row',
-    gap: 8,
-    marginTop: 4,
-    opacity: 0.75,
-  },
   menuContainer: {
     paddingHorizontal: 40,
-    paddingBottom: height * 0.13,
-    gap: 14,
+    paddingBottom: is9_20 ? height * 0.12 : height * 0.06,
+    gap: is9_20 ? 30 : 10,
   },
   button: {
-    backgroundColor: '#FF4444',
+    backgroundColor: 'rgba(255, 0, 0, 0.3)',
     paddingVertical: 18,
-    borderRadius: 16,
     alignItems: 'center',
-    shadowColor: '#FF4444',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.35,
-    shadowRadius: 8,
-    elevation: 6,
+    borderWidth: 1,
+    borderColor: 'red',
   },
   buttonFruit: {
-    backgroundColor: '#FF8C42',
-    shadowColor: '#FF8C42',
+    backgroundColor: 'rgba(255, 0, 0, 0.3)',
   },
   buttonText: {
-    color: '#FFF',
+    color: 'transparent',
     fontSize: 18,
     fontWeight: '800',
     letterSpacing: 1,
   },
   buttonSecondary: {
-    backgroundColor: '#FFF',
+    backgroundColor: 'rgba(255, 0, 0, 0.3)',
     paddingVertical: 15,
-    borderRadius: 16,
     alignItems: 'center',
-    borderWidth: 2,
-    borderColor: '#FF4444',
+    borderWidth: 1,
+    borderColor: 'red',
   },
   buttonSecondaryFruit: {
-    borderColor: '#FF8C42',
+    backgroundColor: 'rgba(255, 0, 0, 0.3)',
   },
   buttonSecondaryText: {
-    color: '#FF4444',
+    color: 'transparent',
     fontSize: 16,
     fontWeight: '700',
     letterSpacing: 1,
   },
   buttonSecondaryTextFruit: {
-    color: '#FF8C42',
+    color: 'transparent',
   },
   footer: {
     position: 'absolute',
-    bottom: 60,
+    top: is9_20 ? height * 0.88 : height * 0.6,
     left: 0,
     right: 0,
+    fontWeight: '600',
     alignItems: 'center',
   },
   version: {
     fontSize: 12,
-    color: '#8B7355',
-    opacity: 0.5,
-  },
-  creditsBtn: {
-    marginTop: 6,
+    opacity: 0.9,
+    color: '#ad7339',
+    fontWeight: '900',
+    textShadowColor: '#000',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 3,
   },
   creditsText: {
-    fontSize: 12,
-    color: '#8B7355',
-    opacity: 0.6,
+    fontSize: is9_20 ? 15 : 12,
+    opacity: 0.9,
+    color: '#ad7339',
+    fontWeight: '900',
     textDecorationLine: 'underline',
+    textShadowColor: '#000',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 3,
+  },
+  creditsContainer: {
+    position: 'absolute',
+    bottom: is9_20 ? height * 0.065 : height * 0.03,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
   },
   modalOverlay: {
     flex: 1,

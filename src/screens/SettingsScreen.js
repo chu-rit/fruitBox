@@ -97,10 +97,6 @@ export default function SettingsScreen({ onBack, mapSize, onChangeMapSize, bgmOn
         </View>
       </View>
 
-      {/* Footer */}
-      <View style={styles.footer}>
-        <Text style={styles.version}>v1.0.0</Text>
-      </View>
     </SafeAreaView>
   );
 }
@@ -227,17 +223,5 @@ const styles = StyleSheet.create({
     height: 1,
     backgroundColor: '#F0F0F0',
     marginVertical: 8,
-  },
-  footer: {
-    position: 'absolute',
-    bottom: 20,
-    left: 0,
-    right: 0,
-    alignItems: 'center',
-  },
-  version: {
-    fontSize: 12,
-    color: '#8B7355',
-    opacity: 0.6,
   },
 });
