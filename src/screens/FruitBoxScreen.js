@@ -453,17 +453,24 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
     };
     document.addEventListener('contextmenu', preventContextMenu, true);
 
-    // Listen for scroll events
-    const handleScroll = () => {
-      console.log('FruitBoxScreen: scroll event received');
+    // Listen for resize events (more reliable than scroll for viewport changes)
+    const handleResize = () => {
+      const h = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+      console.log('FruitBoxScreen: viewport height = ' + h);
     };
-    window.addEventListener('scroll', handleScroll, true);
-    document.addEventListener('scroll', handleScroll, true);
+    window.addEventListener('resize', handleResize);
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', handleResize);
+    }
+    // Trigger once on mount
+    handleResize();
 
     return () => {
       document.removeEventListener('contextmenu', preventContextMenu, true);
-      window.removeEventListener('scroll', handleScroll, true);
-      document.removeEventListener('scroll', handleScroll, true);
+      window.removeEventListener('resize', handleResize);
+      if (window.visualViewport) {
+        window.visualViewport.removeEventListener('resize', handleResize);
+      }
     };
   }, []);
 

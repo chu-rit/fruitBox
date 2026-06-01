@@ -97,8 +97,8 @@ self.addEventListener('fetch', (e) => { e.respondWith(fetch(e.request).catch(() 
 Write-Host "Patching index.html for PWA..." -ForegroundColor Cyan
 $html = [System.IO.File]::ReadAllText("$PWD\docs\index.html")
 if ($html -notmatch 'rel="manifest"') {
-  $scrollTriggerScript = '<script>(function(){window.addEventListener(''load'',function(){console.log(''Page loaded'');setTimeout(function(){console.log(''Scrolling...'');window.scrollTo(0,1);setTimeout(function(){console.log(''Scrolling back...'');window.scrollTo(0,0);},100);},300);});})();</script>'
-  $pwaHead = $scrollTriggerScript + '<link rel="manifest" href="/fruitBox/manifest.json" /><link rel="apple-touch-icon" href="/fruitBox/icon.png" /><meta name="apple-mobile-web-app-capable" content="yes" /><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" /><meta name="apple-mobile-web-app-title" content="FruitBox" /><meta name="mobile-web-app-capable" content="yes" />'
+  $heightFixScript = '<script>(function(){function fixHeight(){var h=window.visualViewport?window.visualViewport.height:window.innerHeight;document.documentElement.style.height=h+''px'';document.body.style.height=h+''px'';var root=document.getElementById(''root'');if(root)root.style.height=h+''px'';}window.addEventListener(''load'',function(){setTimeout(fixHeight,100);setTimeout(fixHeight,500);});window.addEventListener(''resize'',fixHeight);})();</script>'
+  $pwaHead = $heightFixScript + '<link rel="manifest" href="/fruitBox/manifest.json" /><link rel="apple-touch-icon" href="/fruitBox/icon.png" /><meta name="apple-mobile-web-app-capable" content="yes" /><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" /><meta name="apple-mobile-web-app-title" content="FruitBox" /><meta name="mobile-web-app-capable" content="yes" />'
   $swScript = '<script>if(''serviceWorker''in navigator){window.addEventListener(''load'',()=>{navigator.serviceWorker.register(''/fruitBox/sw.js?v=$cacheVersion'');});}</script>'
   $html = $html -replace '</head>', "$pwaHead</head>"
   $html = $html -replace '</body>', "$swScript</body>"
