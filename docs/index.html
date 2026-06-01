@@ -7,14 +7,13 @@
     <title>Fruit Box</title>
     <!-- The `react-native-web` recommended style reset: https://necolas.github.io/react-native-web/docs/setup/#root-element -->
     <style id="expo-reset">
-      :root { --app-height: 100dvh; }
-      html, body { height: var(--app-height); margin: 0; padding: 0; background-color: #FFF8E7; }
-      body { overflow-x: hidden; overflow-y: auto; overscroll-behavior: none; }
-      #root { display: flex; height: var(--app-height); flex: 1; }
+      html, body { height: 100dvh; margin: 0; padding: 0; background-color: #FFF8E7; }
+      body { overflow: hidden; }
+      #root { display: flex; height: 100dvh; flex: 1; }
     </style>
   <meta name="theme-color" content="#FF4444">
 <meta name="description" content="Collect & Stack fruits!">
-<link rel="icon" href="/fruitBox/favicon.ico" /><script>(function(){function setVH(){var h=window.visualViewport?window.visualViewport.height:window.innerHeight;document.documentElement.style.setProperty('--app-height',h+'px');}window.addEventListener('load',function(){setTimeout(setVH,100);setTimeout(setVH,300);setTimeout(setVH,1000);setTimeout(function(){var el=document.querySelector('body');el.style.overflow='hidden';requestAnimationFrame(function(){el.style.overflow='auto';});},300);});window.visualViewport&&window.visualViewport.addEventListener('resize',setVH);})();</script><link rel="manifest" href="/fruitBox/manifest.json" /><link rel="apple-touch-icon" href="/fruitBox/icon.png" /><meta name="apple-mobile-web-app-capable" content="yes" /><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" /><meta name="apple-mobile-web-app-title" content="FruitBox" /><meta name="mobile-web-app-capable" content="yes" /></head>
+<link rel="icon" href="/fruitBox/favicon.ico" /><script>(function(){function forceReflow(){document.documentElement.style.height='99.9%';requestAnimationFrame(function(){document.documentElement.style.height='';});}window.addEventListener('load',function(){setTimeout(forceReflow,100);});})();</script><link rel="manifest" href="/fruitBox/manifest.json" /><link rel="apple-touch-icon" href="/fruitBox/icon.png" /><meta name="apple-mobile-web-app-capable" content="yes" /><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" /><meta name="apple-mobile-web-app-title" content="FruitBox" /><meta name="mobile-web-app-capable" content="yes" /></head>
 
   <body>
     <!-- Use static rendering with Expo Router to support running without JavaScript. -->

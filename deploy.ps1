@@ -13,7 +13,7 @@ New-Item -ItemType File -Path "docs\.nojekyll" -Force | Out-Null
 Write-Host "Fixing viewport..." -ForegroundColor Cyan
 $html = [System.IO.File]::ReadAllText("$PWD\docs\index.html")
 $html = $html -replace 'content="width=device-width, initial-scale=1[^"]*"', 'content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"'
-$cssReset = "      :root { --app-height: 100dvh; }`n      html, body { height: var(--app-height); margin: 0; padding: 0; background-color: #FFF8E7; }`n      body { overflow-x: hidden; overflow-y: auto; overscroll-behavior: none; }`n      #root { display: flex; height: var(--app-height); flex: 1; }"
+$cssReset = "      html, body { height: 100dvh; margin: 0; padding: 0; background-color: #FFF8E7; }`n      body { overflow: hidden; }`n      #root { display: flex; height: 100dvh; flex: 1; }"
 $html = $html -replace '(?s)<style id="expo-reset">.*?</style>', "<style id=`"expo-reset`">`n$cssReset`n    </style>"
 [System.IO.File]::WriteAllText("$PWD\docs\index.html", $html)
 
@@ -97,8 +97,8 @@ self.addEventListener('fetch', (e) => { e.respondWith(fetch(e.request).catch(() 
 Write-Host "Patching index.html for PWA..." -ForegroundColor Cyan
 $html = [System.IO.File]::ReadAllText("$PWD\docs\index.html")
 if ($html -notmatch 'rel="manifest"') {
-  $vhScript = '<script>(function(){function setVH(){var h=window.visualViewport?window.visualViewport.height:window.innerHeight;document.documentElement.style.setProperty(''--app-height'',h+''px'');}window.addEventListener(''load'',function(){setTimeout(setVH,100);setTimeout(setVH,300);setTimeout(setVH,1000);setTimeout(function(){var el=document.querySelector(''body'');el.style.overflow=''hidden'';requestAnimationFrame(function(){el.style.overflow=''auto'';});},300);});window.visualViewport&&window.visualViewport.addEventListener(''resize'',setVH);})();</script>'
-  $pwaHead = $vhScript + '<link rel="manifest" href="/fruitBox/manifest.json" /><link rel="apple-touch-icon" href="/fruitBox/icon.png" /><meta name="apple-mobile-web-app-capable" content="yes" /><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" /><meta name="apple-mobile-web-app-title" content="FruitBox" /><meta name="mobile-web-app-capable" content="yes" />'
+  $forceReflowScript = '<script>(function(){function forceReflow(){document.documentElement.style.height=''99.9%'';requestAnimationFrame(function(){document.documentElement.style.height='''';});}window.addEventListener(''load'',function(){setTimeout(forceReflow,100);});})();</script>'
+  $pwaHead = $forceReflowScript + '<link rel="manifest" href="/fruitBox/manifest.json" /><link rel="apple-touch-icon" href="/fruitBox/icon.png" /><meta name="apple-mobile-web-app-capable" content="yes" /><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" /><meta name="apple-mobile-web-app-title" content="FruitBox" /><meta name="mobile-web-app-capable" content="yes" />'
   $swScript = '<script>if(''serviceWorker''in navigator){window.addEventListener(''load'',()=>{navigator.serviceWorker.register(''/fruitBox/sw.js?v=$cacheVersion'');});}</script>'
   $html = $html -replace '</head>', "$pwaHead</head>"
   $html = $html -replace '</body>', "$swScript</body>"
