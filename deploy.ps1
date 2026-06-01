@@ -13,7 +13,7 @@ New-Item -ItemType File -Path "docs\.nojekyll" -Force | Out-Null
 Write-Host "Fixing viewport..." -ForegroundColor Cyan
 $html = [System.IO.File]::ReadAllText("$PWD\docs\index.html")
 $html = $html -replace 'content="width=device-width, initial-scale=1[^"]*"', 'content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"'
-$cssReset = "      :root { --vh: 1dvh; }`n      html, body { height: 100dvh; height: calc(var(--vh) * 100); margin: 0; padding: 0; background-color: #FFF8E7; }`n      body { overflow: auto; }`n      #root { display: flex; height: 100dvh; height: calc(var(--vh) * 100); flex: 1; }"
+$cssReset = "      :root { --vh: 1dvh; }`n      html, body { min-height: 100dvh; min-height: calc(var(--vh) * 100); margin: 0; padding: 0; background-color: #FFF8E7; }`n      body { overflow-x: hidden; overflow-y: auto; overscroll-behavior: none; }`n      #root { display: flex; min-height: 100dvh; min-height: calc(var(--vh) * 100); flex: 1; }"
 $html = $html -replace '(?s)<style id="expo-reset">.*?</style>', "<style id=`"expo-reset`">`n$cssReset`n    </style>"
 [System.IO.File]::WriteAllText("$PWD\docs\index.html", $html)
 
@@ -31,6 +31,8 @@ if ($jsFile) {
     $js = [System.IO.File]::ReadAllText($jsFile.FullName)
     $js = $js -replace '"/assets/', '"/fruitBox/assets/'
     $js = $js -replace '"assets/', '"/fruitBox/assets/'
+    # Replace 100vh with 100dvh for better mobile viewport handling
+    $js = $js -replace '100vh', '100dvh'
     [System.IO.File]::WriteAllText($jsFile.FullName, $js)
     Write-Host "Fixed: $($jsFile.Name)" -ForegroundColor Yellow
 }
