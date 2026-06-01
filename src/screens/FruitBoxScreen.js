@@ -453,15 +453,17 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
     };
     document.addEventListener('contextmenu', preventContextMenu, true);
 
-    // Listen for scroll events from window
+    // Listen for scroll events
     const handleScroll = () => {
       console.log('FruitBoxScreen: scroll event received');
     };
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, true);
+    document.addEventListener('scroll', handleScroll, true);
 
     return () => {
       document.removeEventListener('contextmenu', preventContextMenu, true);
-      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('scroll', handleScroll, true);
+      document.removeEventListener('scroll', handleScroll, true);
     };
   }, []);
 
