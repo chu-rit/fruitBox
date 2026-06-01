@@ -82,6 +82,7 @@ $manifest = @{
 Write-Host "Generating sw.js..." -ForegroundColor Cyan
 $cacheVersion = Get-Date -Format "yyyyMMddHHmmss"
 $sw = @"
+// Service Worker Version: $cacheVersion
 const CACHE_NAME = 'fruitbox-$cacheVersion';
 const STATIC_ASSETS = ['/fruitBox/', '/fruitBox/index.html', '/fruitBox/manifest.json'];
 self.addEventListener('install', (e) => { e.waitUntil(caches.open(CACHE_NAME).then((c) => c.addAll(STATIC_ASSETS))); self.skipWaiting(); });
@@ -95,7 +96,7 @@ Write-Host "Patching index.html for PWA..." -ForegroundColor Cyan
 $html = [System.IO.File]::ReadAllText("$PWD\docs\index.html")
 if ($html -notmatch 'rel="manifest"') {
   $pwaHead = '<link rel="manifest" href="/fruitBox/manifest.json" /><link rel="apple-touch-icon" href="/fruitBox/icon.png" /><meta name="apple-mobile-web-app-capable" content="yes" /><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" /><meta name="apple-mobile-web-app-title" content="FruitBox" /><meta name="mobile-web-app-capable" content="yes" />'
-  $swScript = '<script>if (''serviceWorker'' in navigator) { window.addEventListener(''load'', () => { navigator.serviceWorker.register(''/fruitBox/sw.js''); }); }</script>'
+  $swScript = '<script>if (''serviceWorker'' in navigator) { window.addEventListener(''load'', () => { navigator.serviceWorker.register(''/fruitBox/sw.js?v=$cacheVersion''); }); }</script>'
   $html = $html -replace '</head>', "$pwaHead</head>"
   $html = $html -replace '</body>', "$swScript</body>"
   $html = $html -replace 'href="/favicon.ico"', 'href="/fruitBox/favicon.ico"'
