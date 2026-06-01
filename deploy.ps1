@@ -13,7 +13,7 @@ New-Item -ItemType File -Path "docs\.nojekyll" -Force | Out-Null
 Write-Host "Fixing viewport..." -ForegroundColor Cyan
 $html = [System.IO.File]::ReadAllText("$PWD\docs\index.html")
 $html = $html -replace 'content="width=device-width, initial-scale=1[^"]*"', 'content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"'
-$cssReset = "      html, body { height: 100svh; margin: 0; padding: 0; background-color: #FFF8E7; }`n      body { overflow: hidden; }`n      #root { display: flex; height: 100svh; flex: 1; }"
+$cssReset = "      html, body { height: 100vh; height: 100dvh; height: 100svh; margin: 0; padding: 0; background-color: #FFF8E7; }`n      body { overflow: hidden; }`n      #root { display: flex; height: 100vh; height: 100dvh; height: 100svh; flex: 1; }"
 $html = $html -replace '(?s)<style id="expo-reset">.*?</style>', "<style id=`"expo-reset`">`n$cssReset`n    </style>"
 [System.IO.File]::WriteAllText("$PWD\docs\index.html", $html)
 
@@ -97,8 +97,7 @@ self.addEventListener('fetch', (e) => { e.respondWith(fetch(e.request).catch(() 
 Write-Host "Patching index.html for PWA..." -ForegroundColor Cyan
 $html = [System.IO.File]::ReadAllText("$PWD\docs\index.html")
 if ($html -notmatch 'rel="manifest"') {
-  $heightFixScript = '<script>(function(){function fixHeight(){var h=window.visualViewport?window.visualViewport.height:window.innerHeight;document.documentElement.style.height=h+''px'';document.body.style.height=h+''px'';var root=document.getElementById(''root'');if(root)root.style.height=h+''px'';}window.addEventListener(''load'',function(){setTimeout(fixHeight,100);setTimeout(fixHeight,500);});window.addEventListener(''resize'',fixHeight);window.addEventListener(''scroll'',fixHeight);if(window.visualViewport)window.visualViewport.addEventListener(''resize'',fixHeight);})();</script>'
-  $pwaHead = $heightFixScript + '<link rel="manifest" href="/fruitBox/manifest.json" /><link rel="apple-touch-icon" href="/fruitBox/icon.png" /><meta name="apple-mobile-web-app-capable" content="yes" /><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" /><meta name="apple-mobile-web-app-title" content="FruitBox" /><meta name="mobile-web-app-capable" content="yes" />'
+  $pwaHead = '<link rel="manifest" href="/fruitBox/manifest.json" /><link rel="apple-touch-icon" href="/fruitBox/icon.png" /><meta name="apple-mobile-web-app-capable" content="yes" /><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" /><meta name="apple-mobile-web-app-title" content="FruitBox" /><meta name="mobile-web-app-capable" content="yes" />'
   $swScript = '<script>if(''serviceWorker''in navigator){window.addEventListener(''load'',()=>{navigator.serviceWorker.register(''/fruitBox/sw.js?v=$cacheVersion'');});}</script>'
   $html = $html -replace '</head>', "$pwaHead</head>"
   $html = $html -replace '</body>', "$swScript</body>"
