@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-// SafeAreaView removed for web
+import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   View,
   Text,
@@ -29,7 +29,7 @@ export default function StartScreen({ onStart, onSettings, onRanking, onLogoPres
   const [showCredits, setShowCredits] = useState(false);
 
   return (
-    <View style={[styles.container, isFruitMode && styles.containerFruit]}>
+    <SafeAreaView style={[styles.container, isFruitMode && styles.containerFruit]} edges={['top', 'bottom']}>
 
       {/* Background image based on aspect ratio */}
       <Image 
@@ -105,7 +105,7 @@ export default function StartScreen({ onStart, onSettings, onRanking, onLogoPres
           </View>
         </TouchableOpacity>
       </Modal>
-    </View>
+    </SafeAreaView>
   );
 }
 
