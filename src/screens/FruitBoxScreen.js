@@ -68,9 +68,52 @@ const getCustomerImg = (request, seed) => {
 const { width, height } = Dimensions.get('window');
 const nativeDriver = Platform.OS !== 'web';
 const aspectRatio = height / width;
-const bgImage = aspectRatio > 1.9
-  ? require('../assets/img/BG(9x20).png')
-  : require('../assets/img/BG(9x16).png');
+const isTall = aspectRatio > 1.9; // 20:9 vs 16:9
+
+// ─── Layout Config ──────────────────────────────────────────
+// All aspect-ratio-dependent sizes in one place.
+// isTall = 20:9 (most modern phones), !isTall = 16:9 (tablets, older phones, web)
+const LAYOUT = {
+  // Header (back / pause / help buttons row)
+  headerMarginTopPct: isTall ? 0.15 : 0.12,       // % of screen height
+
+  // Background images
+  bgTopHeightPct: '50%',                           // BG_TOP covers top half
+
+  // Background numbers (level & score on BG_TOP image)
+  bgNumberTopPct: '19.5%',
+  bgLevelLeftPct: '34%',
+  bgScoreLeftPct: '48%',
+  bgNumberFontSize: width * 0.05,
+  bgLevelWidth: width * 0.10,
+  bgScoreWidth: width * 0.12,
+
+  // Characters row (worker & customer)
+  charactersTop : isTall ? "33%" : "27%",
+  charactersHeight: isTall ? 160 : 160,
+  // charactersMarginTop: isTall ? 0 : 0,
+  charactersMarginBottom: -10, // 캐릭터랑 타이머바 거리
+  workerHeight: isTall ? 200 : 160,
+  customerHeight: isTall ? 200 : 160,
+  customerHeightSmall: isTall ? 130 : 110,
+
+  // 타이머,보드 양쪽 여백
+  GRID_PADDING_HORIZONTAL : isTall ? 6 : 9, // percentage (%)
+
+  // Timer bar
+  timerTop: "10%",
+  timerPaddingH: isTall ? 6 : 7,                   // %
+
+  // Bubble (top is relative to characterEmojiWrapper height=130)
+  bubbleTop: isTall ? -120 : -90,
+  bubbleWidth: 140,
+  bubbleHeight: 100,
+  bubbleLargeWidth: 180,
+  bubbleLargeHeight: 120,
+
+  // Board
+  boardTop: isTall ? '40%' : '38%',
+};
 const DEFAULT_GRID_SIZE = 6;
 const FRUITS = ['apple', 'orange', 'grape', 'pear', 'watermelon', 'strawberry', 'peach', 'pineapple'];
 
@@ -124,7 +167,6 @@ const generateBoard = (score = 0, gridSize = DEFAULT_GRID_SIZE, customerRequest 
 };
 
 const CELL_MARGIN = 2;
-const GRID_PADDING_HORIZONTAL = 7; // percentage (%)
 const START_TIME = 15;
 const getMaxTime = () => START_TIME;
 
@@ -149,8 +191,6 @@ const getLevel = (score) => {
 };
 
 const getTheme = (lv) => LEVEL_THEMES[Math.min(lv - 1, LEVEL_THEMES.length - 1)];
-
-const getLevelName = (lv) => LEVEL_THEMES[Math.min(lv - 1, LEVEL_THEMES.length - 1)].name;
 
 // Lv1:2종, Lv2:4종, Lv3:6종, Lv4+:8종
 const FRUITS_BY_LEVEL = [
@@ -211,7 +251,7 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
 
   const GRID_SIZE = mapSize;
   const appWidth = Platform.OS === 'web' ? Math.min(width, 430) : width;
-  const CELL_SIZE = Math.floor((appWidth * (1 - GRID_PADDING_HORIZONTAL * 2 / 100) - (CELL_MARGIN * 2 * GRID_SIZE)) / GRID_SIZE);
+  const CELL_SIZE = Math.floor((appWidth * (1 - LAYOUT.GRID_PADDING_HORIZONTAL * 2 / 100) - (CELL_MARGIN * 2 * GRID_SIZE)) / GRID_SIZE);
   
   const [board, setBoard] = useState(() => generateBoard(0, GRID_SIZE, generateCustomerRequest(0)));
   const boardRef = useRef(null);
@@ -714,7 +754,7 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
     }, 200);
   }, [GRID_SIZE, CELL_SIZE]);
 
-  const gridPaddingLeft = appWidth * GRID_PADDING_HORIZONTAL / 100;
+  const gridPaddingLeft = appWidth * LAYOUT.GRID_PADDING_HORIZONTAL / 100;
   const getCellFromPos = (x, y) => {
     const adjustedX = x - gridPaddingLeft;
     const col = Math.floor(adjustedX / (CELL_SIZE + CELL_MARGIN * 2));
@@ -835,7 +875,7 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
   return (
     <>
     <View style={styles.container}>
-      <View style={[styles.header, { zIndex: 20, marginTop: height * 0.15 }]}>
+      <View style={[styles.header, { zIndex: 20, marginTop: height * LAYOUT.headerMarginTopPct }]}>
         <Pressable style={styles.backBtn} onPress={onBackToStart}>
           <Image source={require('../assets/img/back_arrow.png')} style={{ width: 24, height: 24, tintColor: '#000' }} resizeMode="contain" />
         </Pressable>
@@ -877,7 +917,7 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
         <View style={styles.characterWrapper}>
           <Image 
             source={showDelivery ? workerImgDelivery : workerImg} 
-            style={[styles.workerImage, { transform: [{ translateY: -13 }] }]} 
+            style={[styles.workerImage, { transform: [{ translateY: -10, translateX: -20 }] }]} 
             resizeMode="contain" 
           />
         </View>
@@ -920,7 +960,7 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
         </View>
       </View>
 
-      <TimerBar timeLeft={timeLeft} maxTime={getMaxTime()} flashValue={timerBarFlash} showTimeBonus={showTimeBonus} paddingH={gridPaddingLeft} />
+      <TimerBar timeLeft={timeLeft} maxTime={getMaxTime()} flashValue={timerBarFlash} showTimeBonus={showTimeBonus} paddingH={appWidth * LAYOUT.timerPaddingH / 100} />
 
       {!gameOver && possibleCombinations === 0 && (
         <View style={styles.noComboBanner}>
@@ -963,7 +1003,7 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
             cellMargin={CELL_MARGIN}
             boardRef={boardRef}
             customerRequestRef={customerRequestRef}
-            boardPaddingLeft={appWidth * GRID_PADDING_HORIZONTAL / 100}
+            boardPaddingLeft={appWidth * LAYOUT.GRID_PADDING_HORIZONTAL / 100}
           />
           {board.map((row, rowIndex) => (
             <View key={rowIndex} style={styles.row}>
@@ -1176,11 +1216,12 @@ const TimerBar = React.memo(function TimerBar({ timeLeft, maxTime, flashValue, s
 
 const timerStyles = StyleSheet.create({
   wrapper: {
-    marginTop: -10,
+    marginTop: 0,
     marginBottom: 0,
     paddingVertical: 0,
     width: '100%',
-    position: 'relative',
+    top: LAYOUT.timerTop,
+    position: 'absolute',
   },
   container: { 
     width: '100%',
@@ -1396,10 +1437,10 @@ const styles = StyleSheet.create({
   // Background Numbers (Level & Score on BG2) - Individual Position Control
   bgLevelNumber: {
     position: 'absolute',
-    top: '19.5%',
-    left: '34%',
-    width: width * 0.10,
-    fontSize: width * 0.05,
+    top: LAYOUT.bgNumberTopPct,
+    left: LAYOUT.bgLevelLeftPct,
+    width: LAYOUT.bgLevelWidth,
+    fontSize: LAYOUT.bgNumberFontSize,
     fontFamily: 'Fredoka_700Bold',
     textShadowColor: 'rgba(0,0,0,0.5)',
     textShadowOffset: { width: 1, height: 1 },
@@ -1410,10 +1451,10 @@ const styles = StyleSheet.create({
   },
   bgScoreNumber: {
     position: 'absolute',
-    top: '19.5%',
-    left: '48%',
-    width: width * 0.12,
-    fontSize: width * 0.05,
+    top: LAYOUT.bgNumberTopPct,
+    left: LAYOUT.bgScoreLeftPct,
+    width: LAYOUT.bgScoreWidth,
+    fontSize: LAYOUT.bgNumberFontSize,
     fontFamily: 'Fredoka_700Bold',
     textShadowColor: 'rgba(0,0,0,0.5)',
     textShadowOffset: { width: 1, height: 1 },
@@ -1424,10 +1465,14 @@ const styles = StyleSheet.create({
   
   // Background images
   bgBot: { position: 'absolute', top: 0, left: 0, width: width, zIndex: 0 },
-  bgTop: { position: 'absolute', top: 0, left: 0, width: width, height: '50%', zIndex: 0 },
+  bgTop: { position: 'absolute', top: 0, left: 0, width: width, height: LAYOUT.bgTopHeightPct, zIndex: 0 },
 
   // Characters (Worker & Customer)
-  charactersRow: { flexDirection: 'row', justifyContent: 'space-around', alignItems: 'flex-end', paddingHorizontal: 20, paddingBottom: 0, marginBottom: 6, marginTop: 50, position: 'relative', borderRadius: 16, height: 200 },
+  charactersRow: { flexDirection: 'row', justifyContent: 'space-around', alignItems: 'flex-end',
+               paddingHorizontal: 0, paddingBottom: 0, position: 'absolute', borderRadius: 16, 
+               marginBottom: LAYOUT.charactersMarginBottom, top: LAYOUT.charactersTop,
+               width: '100%',
+               height: LAYOUT.charactersHeight },
   characterWrapper: { 
     alignItems: 'center', 
     flex: 1,
@@ -1435,15 +1480,15 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   workerImage: {
-    height: 200,
+    height: LAYOUT.workerHeight,
     aspectRatio: 677 / 369,
   },
   customerImage: {
-    height: 200,
+    height: LAYOUT.customerHeight,
     aspectRatio: 677 / 369,
   },
   customerImageSmall: {
-    height: 130,
+    height: LAYOUT.customerHeightSmall,
     aspectRatio: 677 / 369,
   },
   characterEmojiWrapper: {
@@ -1456,16 +1501,16 @@ const styles = StyleSheet.create({
   bigCharacter: { fontSize: 52 },
   bubbleContainer: {
     position: 'absolute',
-    top: -80,
+    top: LAYOUT.bubbleTop,
     right: 30,
-    width: 140,
-    height: 105,
+    width: LAYOUT.bubbleWidth,
+    height: LAYOUT.bubbleHeight,
     alignItems: 'center',
     justifyContent: 'center',
   },
   bubbleContainerLarge: {
-    width: 160,
-    height: 125,
+    width: LAYOUT.bubbleLargeWidth,
+    height: LAYOUT.bubbleLargeHeight,
   },
   bubbleContent: {
     position: 'absolute',
@@ -1565,7 +1610,7 @@ const styles = StyleSheet.create({
   sumBadgeWrapper: { flex: 1, alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' },
   sumBadge: { color: '#FFF', fontWeight: '900', fontSize: 22, textShadowColor: 'rgba(0,0,0,0.6)', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 4 },
   sumBadgePerfect: { color: '#AFFFB0', textShadowColor: 'rgba(0,100,0,0.5)' },
-  board: { flex: 1, justifyContent: 'flex-start', alignItems: 'center', marginTop: -10, width: '100%' },
+  board: { flex: 1, justifyContent: 'flex-start', alignItems: 'center', width: '100%' },
   boardDisabled: { opacity: 0.3 },
   noComboBanner: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, alignItems: 'center', justifyContent: 'center', zIndex: 100 },
   noComboPopup: { backgroundColor: 'rgba(30,20,10,0.92)', borderRadius: 24, paddingVertical: 28, paddingHorizontal: 32, alignItems: 'center', borderWidth: 2, borderColor: '#FF8C42', shadowColor: '#000', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.4, shadowRadius: 16, elevation: 12 },
@@ -1578,7 +1623,7 @@ const styles = StyleSheet.create({
   gameOverText: { fontSize: 36, fontWeight: '900', color: '#FF8C42', marginBottom: 12, letterSpacing: 2 },
   gameOverScore: { fontSize: 24, color: '#8B7355', fontWeight: 'bold', marginBottom: 24 },
   gameOverHint: { fontSize: 16, color: '#FFF', backgroundColor: '#FF8C42', paddingHorizontal: 24, paddingVertical: 12, borderRadius: 25, fontWeight: 'bold', overflow: 'hidden' },
-  gridWrapper: { position: 'relative', width: '100%', paddingHorizontal: `${GRID_PADDING_HORIZONTAL}%` },
+  gridWrapper: { position: 'absolute', top:LAYOUT.boardTop, width: '100%', paddingHorizontal: `${LAYOUT.GRID_PADDING_HORIZONTAL}%` },
   assistOverlay: { position: 'absolute', backgroundColor: 'rgba(255, 140, 66, 0.25)', borderWidth: 2, borderColor: '#FF8C42', borderRadius: 8, zIndex: 50 },
   hintOverlay: { position: 'absolute', backgroundColor: 'rgba(255, 220, 0, 0.35)', borderWidth: 3, borderColor: '#FFD700', borderRadius: 8, zIndex: 60 },
   dragOverlay: { position: 'absolute', backgroundColor: 'rgba(255, 140, 66, 0.3)', borderWidth: 2, borderColor: '#FF8C42', zIndex: 100, pointerEvents: 'none' },
