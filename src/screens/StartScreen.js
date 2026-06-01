@@ -137,14 +137,12 @@ const styles = StyleSheet.create({
     gap: is9_20 ? 30 : 10,
   },
   button: {
-    backgroundColor: 'rgba(255, 0, 0, 0.3)',
+    backgroundColor: 'transparent',
     paddingVertical: 18,
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'red',
   },
   buttonFruit: {
-    backgroundColor: 'rgba(255, 0, 0, 0.3)',
+    backgroundColor: 'transparent',
   },
   buttonText: {
     color: 'transparent',
@@ -153,14 +151,12 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
   },
   buttonSecondary: {
-    backgroundColor: 'rgba(255, 0, 0, 0.3)',
+    backgroundColor: 'transparent',
     paddingVertical: 15,
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'red',
   },
   buttonSecondaryFruit: {
-    backgroundColor: 'rgba(255, 0, 0, 0.3)',
+    backgroundColor: 'transparent',
   },
   buttonSecondaryText: {
     color: 'transparent',
