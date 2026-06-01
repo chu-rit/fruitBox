@@ -7,14 +7,14 @@
     <title>Fruit Box</title>
     <!-- The `react-native-web` recommended style reset: https://necolas.github.io/react-native-web/docs/setup/#root-element -->
     <style id="expo-reset">
-      :root { --vh: 1vh; }
-      html, body { height: calc(var(--vh) * 100); margin: 0; padding: 0; background-color: #FFF8E7; }
+      :root { --vh: 1dvh; }
+      html, body { height: 100dvh; height: calc(var(--vh) * 100); margin: 0; padding: 0; background-color: #FFF8E7; }
       body { overflow: auto; }
-      #root { display: flex; height: calc(var(--vh) * 100); flex: 1; }
+      #root { display: flex; height: 100dvh; height: calc(var(--vh) * 100); flex: 1; }
     </style>
   <meta name="theme-color" content="#FF4444">
 <meta name="description" content="Collect & Stack fruits!">
-<link rel="icon" href="/fruitBox/favicon.ico" /><link rel="manifest" href="/fruitBox/manifest.json" /><link rel="apple-touch-icon" href="/fruitBox/icon.png" /><meta name="apple-mobile-web-app-capable" content="yes" /><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" /><meta name="apple-mobile-web-app-title" content="FruitBox" /><meta name="mobile-web-app-capable" content="yes" /></head>
+<link rel="icon" href="/fruitBox/favicon.ico" /><script>(function(){function setVH(){document.documentElement.style.setProperty('--vh',(window.innerHeight*0.01)+'px');}setVH();window.addEventListener('resize',setVH);})();</script><link rel="manifest" href="/fruitBox/manifest.json" /><link rel="apple-touch-icon" href="/fruitBox/icon.png" /><meta name="apple-mobile-web-app-capable" content="yes" /><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" /><meta name="apple-mobile-web-app-title" content="FruitBox" /><meta name="mobile-web-app-capable" content="yes" /></head>
 
   <body>
     <!-- Use static rendering with Expo Router to support running without JavaScript. -->
@@ -24,5 +24,5 @@
     <!-- The root element for your Expo app. -->
     <div id="root"></div>
   <script src="/fruitBox/_expo/static/js/web/AppEntry-2aeb0b0f41e0287110cb241bfbb47e9d.js" defer></script>
-<script>(function(){function setVH(){document.documentElement.style.setProperty('--vh',(window.innerHeight*0.01)+'px');}setVH();window.addEventListener('resize',setVH);})();if('serviceWorker'in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('/fruitBox/sw.js?v=$cacheVersion');});}</script></body>
+<script>if('serviceWorker'in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('/fruitBox/sw.js?v=$cacheVersion');});}</script></body>
 </html>
