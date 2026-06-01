@@ -1,5 +1,5 @@
-// Service Worker Version: 20260602012433
-const CACHE_NAME = 'fruitbox-20260602012433';
+// Service Worker Version: 20260602012727
+const CACHE_NAME = 'fruitbox-20260602012727';
 const STATIC_ASSETS = ['/fruitBox/', '/fruitBox/index.html', '/fruitBox/manifest.json'];
 self.addEventListener('install', (e) => { e.waitUntil(caches.open(CACHE_NAME).then((c) => c.addAll(STATIC_ASSETS))); self.skipWaiting(); });
 self.addEventListener('activate', (e) => { e.waitUntil(caches.keys().then((keys) => Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k))))); self.clients.claim(); });
