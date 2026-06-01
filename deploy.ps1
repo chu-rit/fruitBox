@@ -13,7 +13,7 @@ New-Item -ItemType File -Path "docs\.nojekyll" -Force | Out-Null
 Write-Host "Fixing viewport..." -ForegroundColor Cyan
 $html = [System.IO.File]::ReadAllText("$PWD\docs\index.html")
 $html = $html -replace 'content="width=device-width, initial-scale=1[^"]*"', 'content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"'
-$cssReset = "      html, body { min-height: 100dvh; margin: 0; padding: 0; background-color: #FFF8E7; }`n      body { overflow: auto; }`n      #root { display: flex; min-height: 100dvh; flex: 1; }"
+$cssReset = "      :root { --vh: 1vh; }`n      html, body { height: calc(var(--vh) * 100); margin: 0; padding: 0; background-color: #FFF8E7; }`n      body { overflow: auto; }`n      #root { display: flex; height: calc(var(--vh) * 100); flex: 1; }"
 $html = $html -replace '(?s)<style id="expo-reset">.*?</style>', "<style id=`"expo-reset`">`n$cssReset`n    </style>"
 [System.IO.File]::WriteAllText("$PWD\docs\index.html", $html)
 
@@ -96,7 +96,7 @@ Write-Host "Patching index.html for PWA..." -ForegroundColor Cyan
 $html = [System.IO.File]::ReadAllText("$PWD\docs\index.html")
 if ($html -notmatch 'rel="manifest"') {
   $pwaHead = '<link rel="manifest" href="/fruitBox/manifest.json" /><link rel="apple-touch-icon" href="/fruitBox/icon.png" /><meta name="apple-mobile-web-app-capable" content="yes" /><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" /><meta name="apple-mobile-web-app-title" content="FruitBox" /><meta name="mobile-web-app-capable" content="yes" />'
-  $swScript = '<script>if (''serviceWorker'' in navigator) { window.addEventListener(''load'', () => { navigator.serviceWorker.register(''/fruitBox/sw.js?v=$cacheVersion''); }); }</script>'
+  $swScript = '<script>(function(){function setVH(){document.documentElement.style.setProperty(''--vh'',(window.innerHeight*0.01)+''px'');}setVH();window.addEventListener(''resize'',setVH);})();if(''serviceWorker''in navigator){window.addEventListener(''load'',()=>{navigator.serviceWorker.register(''/fruitBox/sw.js?v=$cacheVersion'');});}</script>'
   $html = $html -replace '</head>', "$pwaHead</head>"
   $html = $html -replace '</body>', "$swScript</body>"
   $html = $html -replace 'href="/favicon.ico"', 'href="/fruitBox/favicon.ico"'
