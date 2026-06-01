@@ -29,7 +29,7 @@ export default function StartScreen({ onStart, onSettings, onRanking, onLogoPres
   const [showCredits, setShowCredits] = useState(false);
 
   return (
-    <SafeAreaView style={[styles.container, isFruitMode && styles.containerFruit]} edges={['top', 'bottom']}>
+    <SafeAreaView style={[styles.container, isFruitMode && styles.containerFruit]} edges={['top']}>
 
       {/* Background image based on aspect ratio */}
       <Image 
