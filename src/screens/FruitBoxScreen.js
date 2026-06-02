@@ -456,6 +456,7 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
     // Log element dimensions with delay
     let scrollTimeout = null;
     const logDimensions = () => {
+      alert('scroll detected!');
       if (scrollTimeout) clearTimeout(scrollTimeout);
       scrollTimeout = setTimeout(() => {
         const el = document.getElementById('root') || document.body;
@@ -466,29 +467,19 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
           scrollTop: el.scrollTop
         }, null, 2);
         alert(info);
-      }, 2000); // 스크롤 후 2초 뒤에 알림
+      }, 2000);
     };
 
-    // Listen for resize events (more reliable than scroll for viewport changes)
-    const handleResize = () => {
-      const h = window.visualViewport ? window.visualViewport.height : window.innerHeight;
-      console.log('FruitBoxScreen: viewport height = ' + h);
-      logDimensions();
-    };
-    window.addEventListener('resize', handleResize);
-    window.addEventListener('scroll', logDimensions);
-    if (window.visualViewport) {
-      window.visualViewport.addEventListener('resize', handleResize);
-    }
-    // Do not trigger on mount - only on scroll/resize
+    // Register on window, document, and body for iOS PWA compatibility
+    window.addEventListener('scroll', logDimensions, true);
+    document.addEventListener('scroll', logDimensions, true);
+    document.body.addEventListener('scroll', logDimensions, true);
 
     return () => {
       document.removeEventListener('contextmenu', preventContextMenu, true);
-      window.removeEventListener('resize', handleResize);
-      window.removeEventListener('scroll', logDimensions);
-      if (window.visualViewport) {
-        window.visualViewport.removeEventListener('resize', handleResize);
-      }
+      window.removeEventListener('scroll', logDimensions, true);
+      document.removeEventListener('scroll', logDimensions, true);
+      document.body.removeEventListener('scroll', logDimensions, true);
     };
   }, []);
 
