@@ -456,12 +456,13 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
     // Log element dimensions
     const logDimensions = () => {
       const el = document.getElementById('root') || document.body;
-      console.log({
+      const info = JSON.stringify({
         clientHeight: el.clientHeight,
         offsetHeight: el.offsetHeight,
         scrollHeight: el.scrollHeight,
         scrollTop: el.scrollTop
-      });
+      }, null, 2);
+      alert(info);
     };
 
     // Listen for resize events (more reliable than scroll for viewport changes)
