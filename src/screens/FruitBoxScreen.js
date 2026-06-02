@@ -453,32 +453,8 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
     };
     document.addEventListener('contextmenu', preventContextMenu, true);
 
-    // Log element dimensions with delay
-    let scrollTimeout = null;
-    const logDimensions = () => {
-      if (scrollTimeout) clearTimeout(scrollTimeout);
-      scrollTimeout = setTimeout(() => {
-        const el = document.getElementById('root') || document.body;
-        const info = JSON.stringify({
-          clientHeight: el.clientHeight,
-          offsetHeight: el.offsetHeight,
-          scrollHeight: el.scrollHeight,
-          scrollTop: el.scrollTop
-        }, null, 2);
-        alert(info);
-      }, 2000);
-    };
-
-    // Register on window, document, and body for iOS PWA compatibility
-    window.addEventListener('scroll', logDimensions, true);
-    document.addEventListener('scroll', logDimensions, true);
-    document.body.addEventListener('scroll', logDimensions, true);
-
     return () => {
       document.removeEventListener('contextmenu', preventContextMenu, true);
-      window.removeEventListener('scroll', logDimensions, true);
-      document.removeEventListener('scroll', logDimensions, true);
-      document.body.removeEventListener('scroll', logDimensions, true);
     };
   }, []);
 
