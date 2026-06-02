@@ -453,20 +453,20 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
     };
     document.addEventListener('contextmenu', preventContextMenu, true);
 
-    // Log element dimensions with throttle
-    let lastAlertTime = 0;
+    // Log element dimensions with delay
+    let scrollTimeout = null;
     const logDimensions = () => {
-      const now = Date.now();
-      if (now - lastAlertTime < 2000) return; // 2초 간격
-      lastAlertTime = now;
-      const el = document.getElementById('root') || document.body;
-      const info = JSON.stringify({
-        clientHeight: el.clientHeight,
-        offsetHeight: el.offsetHeight,
-        scrollHeight: el.scrollHeight,
-        scrollTop: el.scrollTop
-      }, null, 2);
-      alert(info);
+      if (scrollTimeout) clearTimeout(scrollTimeout);
+      scrollTimeout = setTimeout(() => {
+        const el = document.getElementById('root') || document.body;
+        const info = JSON.stringify({
+          clientHeight: el.clientHeight,
+          offsetHeight: el.offsetHeight,
+          scrollHeight: el.scrollHeight,
+          scrollTop: el.scrollTop
+        }, null, 2);
+        alert(info);
+      }, 2000); // 스크롤 후 2초 뒤에 알림
     };
 
     // Listen for resize events (more reliable than scroll for viewport changes)
@@ -480,8 +480,7 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
     if (window.visualViewport) {
       window.visualViewport.addEventListener('resize', handleResize);
     }
-    // Trigger once on mount
-    handleResize();
+    // Do not trigger on mount - only on scroll/resize
 
     return () => {
       document.removeEventListener('contextmenu', preventContextMenu, true);
