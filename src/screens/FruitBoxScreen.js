@@ -456,7 +456,6 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
     // Log element dimensions with delay
     let scrollTimeout = null;
     const logDimensions = () => {
-      alert('scroll detected!');
       if (scrollTimeout) clearTimeout(scrollTimeout);
       scrollTimeout = setTimeout(() => {
         const el = document.getElementById('root') || document.body;
