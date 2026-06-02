@@ -453,8 +453,12 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
     };
     document.addEventListener('contextmenu', preventContextMenu, true);
 
-    // Log element dimensions
+    // Log element dimensions with throttle
+    let lastAlertTime = 0;
     const logDimensions = () => {
+      const now = Date.now();
+      if (now - lastAlertTime < 2000) return; // 2초 간격
+      lastAlertTime = now;
       const el = document.getElementById('root') || document.body;
       const info = JSON.stringify({
         clientHeight: el.clientHeight,
