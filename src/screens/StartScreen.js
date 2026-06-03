@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   View,
   Text,
@@ -27,14 +27,15 @@ const is9_20 = aspectRatio > 1.9;
 export default function StartScreen({ onStart, onSettings, onRanking, onLogoPress, gameMode = 'apple' }) {
   const isFruitMode = gameMode === 'fruit';
   const [showCredits, setShowCredits] = useState(false);
+  const insets = useSafeAreaInsets();
 
   return (
-    <SafeAreaView style={[styles.container, isFruitMode && styles.containerFruit]} edges={['top', 'bottom']}>
+    <View style={[styles.container, isFruitMode && styles.containerFruit]}>
 
       {/* Background image based on aspect ratio */}
       <Image 
         source={is9_20 ? BG_IMAGE_20 : BG_IMAGE_16} 
-        style={styles.bgImage} 
+        style={[styles.bgImage, { height: height + insets.top + insets.bottom, top: -insets.top }]} 
         resizeMode="cover"
       />
 
@@ -105,7 +106,7 @@ export default function StartScreen({ onStart, onSettings, onRanking, onLogoPres
           </View>
         </TouchableOpacity>
       </Modal>
-    </SafeAreaView>
+    </View>
   );
 }
 
