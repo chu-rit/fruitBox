@@ -139,7 +139,6 @@ const styles = StyleSheet.create({
     height: '100%',
     backgroundColor: '#FFF8E7',
     overflow: 'hidden',
-    paddingBottom: 20,
     borderRadius: 12,
   },
   gameContainer: {

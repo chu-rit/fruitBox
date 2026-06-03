@@ -35,7 +35,7 @@ export default function StartScreen({ onStart, onSettings, onRanking, onLogoPres
       {/* Background image based on aspect ratio */}
       <Image 
         source={is9_20 ? BG_IMAGE_20 : BG_IMAGE_16} 
-        style={[styles.bgImage, { height: height + insets.top + insets.bottom, top: -insets.top }]} 
+        style={[styles.bgImage, { height: height + insets.top + insets.bottom }]} 
         resizeMode="cover"
       />
 
