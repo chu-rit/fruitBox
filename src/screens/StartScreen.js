@@ -42,7 +42,6 @@ export default function StartScreen({ onStart, onSettings, onRanking, onLogoPres
       {/* Title Section */}
       <View style={styles.titleContainer}>
         
-        
       </View>
 
       {/* Menu Buttons */}
