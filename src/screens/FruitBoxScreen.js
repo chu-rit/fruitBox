@@ -83,13 +83,13 @@ const LAYOUT = {
   // Background numbers (level & score on BG_TOP image)
   bgNumberTopPct: '19.5%',
   bgLevelLeftPct: '34%',
-  bgScoreLeftPct: '48%',
+  bgScoreLeftPct: '49.5%',
   bgNumberFontSize: width * 0.05,
   bgLevelWidth: width * 0.10,
   bgScoreWidth: width * 0.12,
 
   // Characters row (worker & customer)
-  charactersTop : isTall ? "33%" : "27%",
+  charactersTop : isTall ? "34%" : "25%",
   charactersHeight: isTall ? 160 : 160,
   // charactersMarginTop: isTall ? 0 : 0,
   charactersMarginBottom: -10, // 캐릭터랑 타이머바 거리
@@ -112,7 +112,7 @@ const LAYOUT = {
   bubbleLargeHeight: 120,
 
   // Board
-  boardTop: isTall ? '40%' : '38%',
+  boardTop: isTall ? '40%' : '35%',
 };
 const DEFAULT_GRID_SIZE = 6;
 const FRUITS = ['apple', 'orange', 'grape', 'pear', 'watermelon', 'strawberry', 'peach', 'pineapple'];

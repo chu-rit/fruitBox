@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   View,
@@ -8,6 +8,9 @@ import {
   Switch,
   Dimensions,
   Image,
+  Modal,
+  Linking,
+  ScrollView,
 } from 'react-native';
 import { playStartSFX } from '../services/sfxService';
 
@@ -17,6 +20,7 @@ const { width, height } = Dimensions.get('window');
 
 export default function SettingsScreen({ onBack, mapSize, onChangeMapSize, bgmOn, sfxOn, onBgmToggle, onSfxToggle }) {
   const mapSizes = [5, 6, 7, 8];
+  const [showCredits, setShowCredits] = useState(false);
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
@@ -28,6 +32,9 @@ export default function SettingsScreen({ onBack, mapSize, onChangeMapSize, bgmOn
         <Text style={styles.title}>SETTINGS</Text>
         <View style={styles.placeholder} />
       </View>
+
+      {/* Scrollable Content */}
+      <ScrollView style={styles.scrollContent} contentContainerStyle={styles.scrollContentContainer}>
 
       {/* Map Size Setting */}
       <View style={styles.settingCard}>
@@ -96,6 +103,46 @@ export default function SettingsScreen({ onBack, mapSize, onChangeMapSize, bgmOn
           />
         </View>
       </View>
+
+      {/* Credits Button */}
+      <TouchableOpacity style={styles.creditsButton} onPress={() => setShowCredits(true)}>
+        <Text style={styles.creditsButtonText}>Credits</Text>
+      </TouchableOpacity>
+
+      {/* Credits Modal */}
+      <Modal transparent visible={showCredits} animationType="fade" onRequestClose={() => setShowCredits(false)}>
+        <TouchableOpacity style={styles.modalOverlay} activeOpacity={1} onPress={() => setShowCredits(false)}>
+          <View style={styles.modalBox}>
+            <Text style={styles.modalTitle}>Credits</Text>
+            <Text style={styles.modalBody}>Created by ChuRit</Text>
+            <Text
+              style={styles.modalLink}
+              onPress={() => Linking.openURL('https://chu-rit.github.io/')}
+            >
+              chu-rit.github.io
+            </Text>
+            <Text style={styles.modalBody}>Music by Clement Panchout</Text>
+            <Text
+              style={styles.modalLink}
+              onPress={() => Linking.openURL('http://www.clementpanchout.com')}
+            >
+              www.clementpanchout.com
+            </Text>
+            <Text style={styles.modalBody}>SFX by KronBits</Text>
+            <Text
+              style={styles.modalLink}
+              onPress={() => Linking.openURL('https://kronbits.itch.io/freesfx')}
+            >
+              kronbits.itch.io/freesfx
+            </Text>
+            <TouchableOpacity onPress={() => setShowCredits(false)} style={styles.modalClose}>
+              <Text style={styles.modalCloseText}>Close</Text>
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
+      </Modal>
+
+      </ScrollView>
 
     </SafeAreaView>
   );
@@ -223,5 +270,71 @@ const styles = StyleSheet.create({
     height: 1,
     backgroundColor: '#F0F0F0',
     marginVertical: 8,
+  },
+  creditsButton: {
+    marginHorizontal: 20,
+    marginTop: 20,
+    backgroundColor: '#FFF',
+    borderRadius: 12,
+    paddingVertical: 16,
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#FF4444',
+  },
+  creditsButtonText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#FF4444',
+  },
+  scrollContent: {
+    flex: 1,
+  },
+  scrollContentContainer: {
+    paddingBottom: 100,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.45)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalBox: {
+    backgroundColor: '#FFF',
+    borderRadius: 20,
+    paddingVertical: 28,
+    paddingHorizontal: 32,
+    alignItems: 'center',
+    width: '80%',
+    gap: 8,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: '#FF4444',
+    marginBottom: 8,
+  },
+  modalBody: {
+    fontSize: 14,
+    color: '#5C4A2A',
+    textAlign: 'center',
+  },
+  modalLink: {
+    fontSize: 13,
+    color: '#FF8C42',
+    textDecorationLine: 'underline',
+    textAlign: 'center',
+    marginBottom: 6,
+  },
+  modalClose: {
+    marginTop: 14,
+    backgroundColor: '#FF4444',
+    paddingVertical: 10,
+    paddingHorizontal: 32,
+    borderRadius: 12,
+  },
+  modalCloseText: {
+    color: '#FFF',
+    fontWeight: '700',
+    fontSize: 15,
   },
 });
