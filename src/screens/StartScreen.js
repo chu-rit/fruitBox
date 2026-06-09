@@ -68,6 +68,7 @@ export default function StartScreen({ onStart, onSettings, onRanking, onLogoPres
   );
 }
 
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
