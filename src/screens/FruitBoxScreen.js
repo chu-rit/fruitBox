@@ -101,15 +101,16 @@ const LAYOUT = {
   GRID_PADDING_HORIZONTAL : isTall ? 6 : 9, // percentage (%)
 
   // Timer bar
-  timerTop: "10%",
-  timerPaddingH: isTall ? 6 : 7,                   // %
+  timerTop: "24%",
+  timerPaddingH: 30,                   // %
+  timerHeight: 110,                     // %
 
   // Bubble (top is relative to characterEmojiWrapper height=130)
   bubbleTop: isTall ? -120 : -90,
   bubbleWidth: 140,
-  bubbleHeight: 100,
+  bubbleHeight: 120,
   bubbleLargeWidth: 180,
-  bubbleLargeHeight: 120,
+  bubbleLargeHeight: 140,
 
   // Board
   boardTop: isTall ? '40%' : '35%',
@@ -924,7 +925,7 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
         </View>
 
         {/* Customer (Right) */}
-        <View style={styles.characterWrapper}>
+        <View style={[styles.characterWrapper, { marginRight: -20 }]}>
           <Animated.View style={[styles.characterEmojiWrapper, customerSlideStyle]}>
             {(() => {
               const customerData = getCustomerImg(customerRequest, customerImgSeed);
@@ -941,17 +942,19 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
                 />
               );
             })()}
-            <View style={[styles.bubbleContainer, c5Condition && styles.bubbleContainerLarge]}>
+            <View style={[styles.bubbleContainer, customerRequest <= 9 && { top: LAYOUT.bubbleTop + 30 }]}>
               <Image 
                 source={require('../assets/img/bubble.png')} 
                 style={{ width: '100%', height: '100%', position: 'absolute' }} 
                 resizeMode="contain"
               />
               <View style={styles.bubbleContent}>
-                <Text style={styles.bubbleText}>{customerRequest}</Text>
+                <Text style={styles.bubbleText} numberOfLines={1} adjustsFontSizeToFit>
+                  {customerRequest}{c5Condition ? ' ' : ''}
+                </Text>
                 {c5Condition && (
                   <View style={styles.bubbleFruitRow}>
-                    <Image source={FRUIT_IMAGES[c5Condition.fruit]} style={{ width: 20, height: 20 }} resizeMode="contain" />
+                    <Image source={FRUIT_IMAGES[c5Condition.fruit]} style={{ width: 26, height: 26 }} resizeMode="contain" />
                     {c5Condition.type === 'exclude' && <Text style={styles.bubbleFruitType}>❌</Text>}
                   </View>
                 )}
@@ -1177,14 +1180,14 @@ const TimerBar = React.memo(function TimerBar({ timeLeft, maxTime, flashValue, s
     };
   });
   
-  const IMG_RATIO = 750 / 150;
+  const IMG_RATIO = 414 / LAYOUT.timerHeight;
   const trackHeight = trackWidth / IMG_RATIO;
-  const GAUGE_OFFSET = trackWidth * 0.18;
-  const GAUGE_WIDTH = trackWidth * 0.72;
+  const GAUGE_OFFSET = 0;
+  const GAUGE_WIDTH = trackWidth;
 
   const imageWidthStyle = useAnimatedStyle(() => {
     const progress = Math.max(0, Math.min(1, timeLeft.value / maxTime));
-    return { width: GAUGE_OFFSET + GAUGE_WIDTH * progress };
+    return { width: GAUGE_WIDTH * progress };
   });
 
   return (
@@ -1195,19 +1198,19 @@ const TimerBar = React.memo(function TimerBar({ timeLeft, maxTime, flashValue, s
       <View style={[timerStyles.container, { paddingHorizontal: paddingH }]}>
         <View style={timerStyles.track} onLayout={e => setTrackWidth(e.nativeEvent.layout.width)}>
           <Image
-            source={require('../assets/img/time_e.png')}
+            source={require('../assets/img/bar1.png')}
             style={{ width: trackWidth, height: trackHeight }}
             resizeMode="stretch"
           />
           <Animated.View style={[timerStyles.imageClip, imageWidthStyle, { height: trackHeight }]}>
             <Image
-              source={require('../assets/img/time_f.png')}
-              style={{ width: trackWidth, height: trackHeight, transform: [{ scaleY: 0.9 }, { translateY: -trackHeight * 0.03 }] }}
+              source={require('../assets/img/bar2.png')}
+              style={{ width: trackWidth, height: trackHeight }}
               resizeMode="stretch"
             />
           </Animated.View>
-          <View style={{ position: 'absolute', left: 14, top: -10, width: GAUGE_OFFSET, height: trackHeight, justifyContent: 'center', alignItems: 'center' }}>
-            <Text style={{ fontSize: trackHeight * 0.3, fontWeight: '900', color: '#5A3A1A', textShadowColor: 'rgba(255,255,255,0.6)', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 2 }}>{timeDisplay}s</Text>
+          <View style={{ position: 'absolute', left: 0, top: 0, width: trackWidth, height: trackHeight, justifyContent: 'center', alignItems: 'center' }}>
+            <Text style={{ fontSize: trackHeight * 0.45, fontFamily: 'Fredoka_700Bold', color: '#8B5A3C', textShadowColor: 'rgba(0,0,0,0.5)', textShadowOffset: { width: 1, height: 1 }, textShadowRadius: 3, marginTop: trackHeight * 0.15 }}>{timeDisplay}s</Text>
           </View>
         </View>
       </View>
@@ -1234,12 +1237,15 @@ const timerStyles = StyleSheet.create({
   track: {
     flex: 1,
     position: 'relative',
+    borderRadius: 9,
+    overflow: 'hidden',
   },
   imageClip: {
     overflow: 'hidden',
     position: 'absolute',
     left: 0,
     top: 0,
+    borderRadius: 9,
   },
   bonusText: {
     position: 'absolute',
@@ -1515,18 +1521,21 @@ const styles = StyleSheet.create({
   },
   bubbleContent: {
     position: 'absolute',
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 0,
+    gap: 4,
     marginBottom: 12,
   },
   bubbleText: { 
-    fontSize: 28,
+    fontSize: 22,
     fontFamily: 'Fredoka_700Bold',
     color: '#8B5A3C',
     textShadowColor: 'rgba(0,0,0,0.4)',
     textShadowOffset: { width: 1, height: 1 },
     textShadowRadius: 3,
+    textAlign: 'center',
+    width: '100%',
   },
   bubbleFruitRow: {
     alignItems: 'center',

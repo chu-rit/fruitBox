@@ -13,7 +13,7 @@ import { playStartSFX } from '../services/sfxService';
 
 const { width, height } = Dimensions.get('window');
 
-// Background images for different aspect ratios
+// Background images for different aspect ratios 
 const BG_IMAGE_16 = require('../assets/img/ST_BG(16).png');
 const BG_IMAGE_20 = require('../assets/img/ST_BG(20).png');
 
