@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   View,
   Text,
@@ -17,13 +17,16 @@ import { playStartSFX } from '../services/sfxService';
 const BACK_ARROW = require('../assets/img/back_arrow.png');
 
 const { width, height } = Dimensions.get('window');
+const BG_BOT = require('../assets/img/BG_BOT.png');
 
 export default function SettingsScreen({ onBack, mapSize, onChangeMapSize, bgmOn, sfxOn, onBgmToggle, onSfxToggle }) {
   const mapSizes = [5, 6, 7, 8];
   const [showCredits, setShowCredits] = useState(false);
+  const insets = useSafeAreaInsets();
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
+      <Image source={BG_BOT} style={{ position: 'absolute', top: 0, left: 0, width, height: height + insets.top + insets.bottom }} resizeMode="stretch" />
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity style={styles.backBtn} onPress={() => { playStartSFX(); onBack(); }}>
@@ -151,7 +154,7 @@ export default function SettingsScreen({ onBack, mapSize, onChangeMapSize, bgmOn
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFF8E7',
+    backgroundColor: 'transparent',
   },
   header: {
     flexDirection: 'row',
@@ -164,16 +167,21 @@ const styles = StyleSheet.create({
   backBtn: {
     width: 40,
     height: 40,
-    backgroundColor: 'rgba(139,115,85,0.12)',
+    backgroundColor: 'rgba(255,255,255,0.6)',
     borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(139,94,60,0.2)',
   },
   title: {
-    fontSize: 24,
+    fontSize: 26,
     fontWeight: '900',
-    color: '#FF4444',
-    letterSpacing: 2,
+    color: '#6B3E1E',
+    letterSpacing: 3,
+    textShadowColor: 'rgba(255,255,255,0.8)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
   },
   placeholder: {
     width: 40,
@@ -181,20 +189,22 @@ const styles = StyleSheet.create({
   settingCard: {
     marginHorizontal: 20,
     marginTop: 20,
-    backgroundColor: '#FFF',
+    backgroundColor: 'rgba(255,255,255,0.75)',
     borderRadius: 20,
     padding: 24,
-    shadowColor: '#000',
+    borderWidth: 1,
+    borderColor: 'rgba(139,94,60,0.15)',
+    shadowColor: '#8B5A3C',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.12,
     shadowRadius: 8,
     elevation: 5,
   },
   settingLabel: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#8B7355',
-    letterSpacing: 1,
+    fontSize: 14,
+    fontWeight: '900',
+    color: '#6B3E1E',
+    letterSpacing: 2,
     marginBottom: 8,
   },
   settingDescription: {
@@ -211,20 +221,20 @@ const styles = StyleSheet.create({
     flex: 1,
     marginHorizontal: 4,
     paddingVertical: 14,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: 'rgba(255,255,255,0.6)',
     borderRadius: 12,
     alignItems: 'center',
-    borderWidth: 2,
-    borderColor: 'transparent',
+    borderWidth: 1.5,
+    borderColor: 'rgba(139,94,60,0.2)',
   },
   sizeButtonActive: {
-    backgroundColor: '#FF4444',
-    borderColor: '#FF4444',
+    backgroundColor: '#FF8C42',
+    borderColor: '#FF8C42',
   },
   sizeButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#666',
+    color: '#6B3E1E',
   },
   sizeButtonTextActive: {
     color: '#FFF',
@@ -274,17 +284,17 @@ const styles = StyleSheet.create({
   creditsButton: {
     marginHorizontal: 20,
     marginTop: 20,
-    backgroundColor: '#FFF',
-    borderRadius: 12,
+    backgroundColor: 'rgba(255,255,255,0.75)',
+    borderRadius: 16,
     paddingVertical: 16,
     alignItems: 'center',
-    borderWidth: 2,
-    borderColor: '#FF4444',
+    borderWidth: 1.5,
+    borderColor: 'rgba(139,94,60,0.25)',
   },
   creditsButtonText: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#FF4444',
+    color: '#6B3E1E',
   },
   scrollContent: {
     flex: 1,
@@ -310,7 +320,7 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 20,
     fontWeight: '800',
-    color: '#FF4444',
+    color: '#6B3E1E',
     marginBottom: 8,
   },
   modalBody: {
@@ -327,7 +337,7 @@ const styles = StyleSheet.create({
   },
   modalClose: {
     marginTop: 14,
-    backgroundColor: '#FF4444',
+    backgroundColor: '#FF8C42',
     paddingVertical: 10,
     paddingHorizontal: 32,
     borderRadius: 12,

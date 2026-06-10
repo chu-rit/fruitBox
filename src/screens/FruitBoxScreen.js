@@ -174,11 +174,21 @@ const getMaxTime = () => START_TIME;
 // 레벨: 1=봄, 2=여름, 3=가을, 4=겨울, 5=MAX
 // 임계값: 봄→여름:150, 여름→가을:400, 가을→겨울:700, 겨울→MAX:1000
 const LEVEL_THEMES = [
-  { bg: '#FFF8E7', blockFill: '#FFB347', blockStroke: '#FF8C42', name: '봄' },
-  { bg: '#E8F5E9', blockFill: '#66BB6A', blockStroke: '#388E3C', name: '여름' },
-  { bg: '#F5DEB3', blockFill: '#D2691E', blockStroke: '#8B4513', name: '가을' },
-  { bg: '#E3F2FD', blockFill: '#42A5F5', blockStroke: '#1565C0', name: '겨울' },
-  { bg: '#E8E0F5', blockFill: '#7C4DFF', blockStroke: '#5C35CC', name: 'MAX' },
+  { bg: '#FFF0F5', bgTop: '#FFB7C5', bgBot: '#FFE5B4', blockFill: '#FFB347', blockStroke: '#FF8C42', name: '봄',
+    deco: ['🌸','🌷','🌼','🌸','🌺','🌻','🌷','🌸','🌼'],
+    decoBot: ['🍓','🍎','🍑','🍒','🫐'] },
+  { bg: '#E8F5E9', bgTop: '#66BB6A', bgBot: '#B8E6BC', blockFill: '#66BB6A', blockStroke: '#388E3C', name: '여름',
+    deco: ['🌿','🍃','🌴','🌿','🍀','�','�','�','�'],
+    decoBot: ['🍉','🍇','🥝','🍈','🍏'] },
+  { bg: '#FFF3E0', bgTop: '#FF8C00', bgBot: '#EEBB88', blockFill: '#D2691E', blockStroke: '#8B4513', name: '가을',
+    deco: ['🍂','🍁','🌾','🍂','🍄','🌰','🍁','🍂','🌾'],
+    decoBot: ['🍐','🍊','🍋','🥭','🍑'] },
+  { bg: '#E3F2FD', bgTop: '#42A5F5', bgBot: '#A8D4F5', blockFill: '#42A5F5', blockStroke: '#1565C0', name: '겨울',
+    deco: ['❄️','⛄','🌨','❄️','🔵','💙','⛄','❄️','🌨'],
+    decoBot: ['🫐','🍇','🫒','🍈','🍏'] },
+  { bg: '#EDE7F6', bgTop: '#9C27B0', bgBot: '#C8AAFF', blockFill: '#7C4DFF', blockStroke: '#5C35CC', name: 'MAX',
+    deco: ['⭐','✨','🌟','💫','⭐','🌠','✨','🌟','💫'],
+    decoBot: ['🍇','🫐','🍒','🍓','🍎'] },
 ];
 
 const LEVEL_THRESHOLDS = [0, 150, 400, 700, 1000];
@@ -892,10 +902,38 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
         </View>
       </View>
 
-      {/* Background: BOT fills full screen, TOP anchored to top */}
-      <Image source={require('../assets/img/BG_BOT.png')} style={[styles.bgBot, { height: height + insets.top + insets.bottom }]} resizeMode="stretch" />
+      {/* Background: theme-based views */}
+      <View style={[styles.bgBot, { height: height + insets.top + insets.bottom, backgroundColor: theme.bgBot }]}>
+        {[
+          { src: FRUIT_IMAGES.apple,      size: 56, left: '5%',  bottom: '12%', rot: -15 },
+          { src: FRUIT_IMAGES.orange,     size: 44, left: '18%', bottom: '28%', rot: 20  },
+          { src: FRUIT_IMAGES.grape,      size: 60, left: '8%',  bottom: '48%', rot: -8  },
+          { src: FRUIT_IMAGES.pear,       size: 40, left: '30%', bottom: '8%',  rot: 12  },
+          { src: FRUIT_IMAGES.watermelon, size: 52, left: '55%', bottom: '18%', rot: -20 },
+          { src: FRUIT_IMAGES.strawberry, size: 48, left: '72%', bottom: '35%', rot: 15  },
+          { src: FRUIT_IMAGES.peach,      size: 56, left: '85%', bottom: '10%', rot: -10 },
+          { src: FRUIT_IMAGES.pineapple,  size: 44, left: '65%', bottom: '52%', rot: 18  },
+          { src: FRUIT_IMAGES.apple,      size: 36, left: '42%', bottom: '42%', rot: -5  },
+          { src: FRUIT_IMAGES.orange,     size: 48, left: '88%', bottom: '58%', rot: 25  },
+          { src: FRUIT_IMAGES.grape,      size: 40, left: '25%', bottom: '55%', rot: -18 },
+          { src: FRUIT_IMAGES.strawberry, size: 52, left: '48%', bottom: '65%', rot: 10  },
+          { src: FRUIT_IMAGES.peach,      size: 40, left: '3%',  bottom: '70%', rot: 8   },
+          { src: FRUIT_IMAGES.pineapple,  size: 64, left: '78%', bottom: '72%', rot: -12 },
+          { src: FRUIT_IMAGES.watermelon, size: 36, left: '35%', bottom: '75%', rot: 22  },
+          { src: FRUIT_IMAGES.apple,      size: 48, left: '60%', bottom: '80%', rot: -6  },
+          { src: FRUIT_IMAGES.orange,     size: 36, left: '14%', bottom: '82%', rot: 30  },
+          { src: FRUIT_IMAGES.pear,       size: 52, left: '90%', bottom: '80%', rot: -22 },
+          { src: FRUIT_IMAGES.grape,      size: 44, left: '50%', bottom: '88%', rot: 14  },
+          { src: FRUIT_IMAGES.strawberry, size: 36, left: '75%', bottom: '90%', rot: -9  },
+          { src: FRUIT_IMAGES.peach,      size: 48, left: '22%', bottom: '92%', rot: 5   },
+          { src: FRUIT_IMAGES.apple,      size: 40, left: '40%', bottom: '22%', rot: -25 },
+          { src: FRUIT_IMAGES.watermelon, size: 44, left: '92%', bottom: '30%', rot: 17  },
+          { src: FRUIT_IMAGES.pineapple,  size: 36, left: '58%', bottom: '5%',  rot: -3  },
+        ].map((f, i) => (
+          <Image key={i} source={f.src} style={{ position: 'absolute', width: f.size, height: f.size, left: f.left, bottom: f.bottom, opacity: 0.28, transform: [{ rotate: `${f.rot}deg` }] }} resizeMode="contain" />
+        ))}
+      </View>
       <Image source={require('../assets/img/BG_TOP.png')} style={styles.bgTop} resizeMode="stretch" />
-
       {/* Score + Level Numbers on Background */}
       <Text style={[styles.bgLevelNumber, { color: '#8B5A3C' }]}>{level >= 5 ? 'MAX' : level}</Text>
       <Pressable onPress={handlePossibleTap} style={styles.bgScoreNumber}>

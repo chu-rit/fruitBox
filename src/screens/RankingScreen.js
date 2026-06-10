@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   View,
   Text,
@@ -15,8 +15,10 @@ import { getRankings, getWeeklyRankings } from '../services/rankingService';
 const BACK_ARROW = require('../assets/img/back_arrow.png');
 
 const { width, height } = Dimensions.get('window');
+const BG_BOT = require('../assets/img/BG_BOT.png');
 
 export default function RankingScreen({ onBack }) {
+  const insets = useSafeAreaInsets();
   const [rankings, setRankings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('weekly'); // 'all' or 'weekly'
@@ -51,6 +53,7 @@ export default function RankingScreen({ onBack }) {
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
+      <Image source={BG_BOT} style={{ position: 'absolute', top: 0, left: 0, width, height: height + insets.top + insets.bottom }} resizeMode="stretch" />
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity style={styles.backButton} onPress={onBack}>
@@ -72,7 +75,7 @@ export default function RankingScreen({ onBack }) {
           style={[styles.tab, activeTab === 'all' && styles.tabActive]}
           onPress={() => setActiveTab('all')}
         >
-          <Text style={[styles.tabText, activeTab === 'all' && styles.tabTextActive]}>Global Top</Text>
+          <Text style={[styles.tabText, activeTab === 'all' && styles.tabTextActive]}>AllTime Top</Text>
         </TouchableOpacity>
       </View>
 
@@ -122,7 +125,7 @@ export default function RankingScreen({ onBack }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFF8E7',
+    backgroundColor: 'transparent',
   },
   header: {
     flexDirection: 'row',
@@ -131,20 +134,26 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 40,
     paddingBottom: 20,
+    zIndex: 1,
   },
   backButton: {
     width: 40,
     height: 40,
-    backgroundColor: 'rgba(139,115,85,0.12)',
+    backgroundColor: 'rgba(255,255,255,0.6)',
     borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(139,94,60,0.2)',
   },
   title: {
-    fontSize: 24,
+    fontSize: 26,
     fontWeight: '900',
-    color: '#FF8C42',
-    letterSpacing: 2,
+    color: '#6B3E1E',
+    letterSpacing: 3,
+    textShadowColor: 'rgba(255,255,255,0.8)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
   },
   placeholder: {
     width: 40,
@@ -153,23 +162,26 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     paddingHorizontal: 20,
     paddingVertical: 10,
-    backgroundColor: '#FFF8E7',
+    backgroundColor: 'transparent',
   },
   tab: {
     flex: 1,
     paddingVertical: 12,
-    borderRadius: 10,
+    borderRadius: 20,
     alignItems: 'center',
-    backgroundColor: '#FFF',
+    backgroundColor: 'rgba(255,255,255,0.5)',
     marginHorizontal: 5,
+    borderWidth: 1.5,
+    borderColor: 'rgba(139,94,60,0.2)',
   },
   tabActive: {
     backgroundColor: '#FF8C42',
+    borderColor: '#FF8C42',
   },
   tabText: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '700',
-    color: '#8B7355',
+    color: '#6B3E1E',
   },
   tabTextActive: {
     color: '#FFF',
@@ -219,14 +231,16 @@ const styles = StyleSheet.create({
   rankItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFF',
-    borderRadius: 12,
+    backgroundColor: 'rgba(255,255,255,0.75)',
+    borderRadius: 16,
     padding: 16,
     marginBottom: 10,
-    shadowColor: '#000',
+    borderWidth: 1,
+    borderColor: 'rgba(139,94,60,0.15)',
+    shadowColor: '#8B5A3C',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    shadowOpacity: 0.12,
+    shadowRadius: 6,
     elevation: 3,
   },
   rankBadge: {
@@ -244,7 +258,7 @@ const styles = StyleSheet.create({
   rankName: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#333',
+    color: '#4A2C0A',
     marginBottom: 4,
   },
   rankDate: {
@@ -257,7 +271,7 @@ const styles = StyleSheet.create({
   rankScore: {
     fontSize: 20,
     fontWeight: '900',
-    color: '#FF8C42',
+    color: '#D2691E',
   },
   rankLevel: {
     fontSize: 12,
