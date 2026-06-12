@@ -939,7 +939,7 @@ export default function FruitBoxScreen({ onBackToStart, mapSize = DEFAULT_GRID_S
       <Pressable onPress={handlePossibleTap} style={styles.bgScoreNumber}>
         <Text style={[styles.bgScoreNumber, { color: '#8B5A3C' }]}>{score}</Text>
       </Pressable>
-      {showScoreBonus && (
+      {false && showScoreBonus && (
         <Text style={styles.scoreBonusText}>+{showScoreBonus.amount}점</Text>
       )}
 
@@ -1230,7 +1230,7 @@ const TimerBar = React.memo(function TimerBar({ timeLeft, maxTime, flashValue, s
 
   return (
     <View style={timerStyles.wrapper}>
-      {showTimeBonus && (
+      {false && showTimeBonus && (
         <Text style={timerStyles.bonusText}>+{Math.round(showTimeBonus.amount)}초</Text>
       )}
       <View style={[timerStyles.container, { paddingHorizontal: paddingH }]}>

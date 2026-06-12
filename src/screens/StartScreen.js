@@ -62,7 +62,7 @@ export default function StartScreen({ onStart, onSettings, onRanking, onLogoPres
 
       {/* Footer: Version */}
       <View style={styles.footer}>
-        <Text style={styles.version}>v1.0.5</Text>
+        <Text style={styles.version}>v1.0.7</Text>
       </View>
     </View>
   );
