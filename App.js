@@ -1,4 +1,4 @@
-import { StyleSheet, View, Platform, Image, TouchableWithoutFeedback } from 'react-native';
+import { StyleSheet, View, Platform, Image, TouchableWithoutFeedback, Text } from 'react-native';
 import { useEffect, useState } from 'react';
 import { Asset } from 'expo-asset';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -44,6 +44,18 @@ const LOADING_IMG = require('./src/assets/img/loading.png');
 export default function App() {
   const [loaded, setLoaded] = useState(false);
   const [ready, setReady] = useState(false);
+  const [dotCount, setDotCount] = useState(1);
+
+  // Loading dots animation
+  useEffect(() => {
+    if (loaded) return;
+    
+    const interval = setInterval(() => {
+      setDotCount(prev => (prev % 3) + 1);
+    }, 500);
+    
+    return () => clearInterval(interval);
+  }, [loaded]);
 
   // Inject web CSS to prevent text selection and context menu
   useEffect(() => {
@@ -56,7 +68,10 @@ export default function App() {
     if (Platform.OS !== 'web') tasks.push(loadRewardedAd());
     Promise.all(tasks)
       .catch(() => {})
-      .finally(() => setLoaded(true));
+      .finally(() => {
+        setLoaded(true);
+        setReady(true);
+      });
   }, []);
 
   useEffect(() => {
@@ -92,11 +107,18 @@ export default function App() {
 
   if (!ready) {
     return (
-      <TouchableWithoutFeedback onPress={() => loaded && setReady(true)}>
-        <View style={styles.loadingContainer}>
-          <Image source={LOADING_IMG} style={styles.loadingBg} resizeMode="cover" />
+      <View style={styles.loadingContainer}>
+        <Image source={LOADING_IMG} style={styles.loadingBg} resizeMode="cover" />
+        <View style={styles.loadingMessageContainer}>
+          {loaded ? (
+            <Text style={styles.tapText}>Starting...</Text>
+          ) : (
+            <Text style={styles.loadingText}>
+              Loading{'.'.repeat(dotCount)}
+            </Text>
+          )}
         </View>
-      </TouchableWithoutFeedback>
+      </View>
     );
   }
 
@@ -121,5 +143,32 @@ const styles = StyleSheet.create({
     position: 'absolute',
     width: '100%',
     height: '100%',
+  },
+  loadingMessageContainer: {
+    position: 'absolute',
+    bottom: '20%',
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+  },
+  loadingText: {
+    fontSize: 32,
+    fontFamily: Platform.OS === 'web' ? 'Arial Black' : 'Fredoka_700Bold',
+    fontWeight: '900',
+    color: '#7A4010',
+    textShadowColor: 'rgba(120,60,0,0.2)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 1,
+    zIndex: 100,
+  },
+  tapText: {
+    fontSize: '3vh',
+    fontFamily: Platform.OS === 'web' ? 'Arial Black' : 'Fredoka_700Bold',
+    fontWeight: '900',
+    color: '#7A4010',
+    textShadowColor: 'rgba(120,60,0,0.2)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 1,
+    zIndex: 100,
   },
 });
