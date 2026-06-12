@@ -26,6 +26,10 @@ async function _load() {
   }
 }
 
+export async function preloadBGM() {
+  await _load();
+}
+
 export function setBGMEnabled(enabled) {
   bgmEnabled = enabled;
   if (enabled) {
