@@ -33,16 +33,7 @@ import Animated, {
 import FruitBlock from '../assets/icons/FruitBlock';
 
 
-const FRUIT_IMAGES = {
-  apple: require('../assets/img/apple.png'),
-  orange: require('../assets/img/orange.png'),
-  grape: require('../assets/img/grape.png'),
-  pear: require('../assets/img/pear.png'),
-  watermelon: require('../assets/img/watermelon.png'),
-  strawberry: require('../assets/img/strawberry.png'),
-  peach: require('../assets/img/peach.png'),
-  pineapple: require('../assets/img/pineapple.png'),
-};
+import { FRUIT_IMAGES } from '../constants/images';
 import { saveRanking } from '../services/rankingService';
 import { showRewardedAdOrSkip, loadRewardedAd } from '../services/adService';
 import { startBGM, stopBGM, pauseBGM, resumeBGM, setBGMRateByTime } from '../services/musicService';

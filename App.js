@@ -6,6 +6,7 @@ import Game from './src/Game';
 import { preloadSFX } from './src/services/sfxService';
 import { setBGMEnabled, preloadBGM } from './src/services/musicService';
 import { loadRewardedAd } from './src/services/adService';
+import { FRUIT_IMAGES } from './src/constants/images';
 
 const PRELOAD_IMAGES = [
   require('./src/assets/img/S1.png'),
@@ -23,20 +24,14 @@ const PRELOAD_IMAGES = [
   require('./src/assets/img/T1.jpg'),
   require('./src/assets/img/T2.jpg'),
   require('./src/assets/img/T3.jpg'),
-  require('./src/assets/img/apple.png'),
+  // FRUIT_IMAGES - 공유된 이미지 객체 사용
+  ...Object.values(FRUIT_IMAGES),
   require('./src/assets/img/back_arrow.png'),
   require('./src/assets/img/bar1.png'),
   require('./src/assets/img/bar2.png'),
   require('./src/assets/img/bubble.png'),
-  require('./src/assets/img/grape.png'),
   require('./src/assets/img/hand.png'),
   require('./src/assets/img/icon.png'),
-  require('./src/assets/img/orange.png'),
-  require('./src/assets/img/peach.png'),
-  require('./src/assets/img/pear.png'),
-  require('./src/assets/img/pineapple.png'),
-  require('./src/assets/img/strawberry.png'),
-  require('./src/assets/img/watermelon.png'),
 ];
 
 const LOADING_IMG = require('./src/assets/img/loading.png');
