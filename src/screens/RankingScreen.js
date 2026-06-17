@@ -95,7 +95,7 @@ export default function RankingScreen({ onBack }) {
           </Text>
         </View>
       ) : (
-        <ScrollView style={styles.scrollContent} contentContainerStyle={styles.scrollContentContainer}>
+        <ScrollView style={styles.scrollContent} contentContainerStyle={[styles.scrollContentContainer, { paddingBottom: 20 + insets.bottom }]}>
           {rankings.map((item, index) => (
             <View key={item.id} style={styles.rankItem}>
               <View style={styles.rankBadge}>

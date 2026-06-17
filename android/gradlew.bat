@@ -17,6 +17,7 @@
 @rem
 
 @if "%DEBUG%"=="" @echo off
+set JAVA_HOME=C:\Program Files\Eclipse Adoptium\jdk-17.0.19.10-hotspot
 @rem ##########################################################################
 @rem
 @rem  Gradle startup script for Windows

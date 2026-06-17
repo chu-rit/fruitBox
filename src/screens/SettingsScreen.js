@@ -37,7 +37,7 @@ export default function SettingsScreen({ onBack, mapSize, onChangeMapSize, bgmOn
       </View>
 
       {/* Scrollable Content */}
-      <ScrollView style={styles.scrollContent} contentContainerStyle={styles.scrollContentContainer}>
+      <ScrollView style={styles.scrollContent} contentContainerStyle={[styles.scrollContentContainer, { paddingBottom: 100 + insets.bottom }]}>
 
       {/* Map Size Setting */}
       <View style={styles.settingCard}>
@@ -144,6 +144,11 @@ export default function SettingsScreen({ onBack, mapSize, onChangeMapSize, bgmOn
           </View>
         </TouchableOpacity>
       </Modal>
+
+      {/* Version */}
+      <View style={styles.versionContainer}>
+        <Text style={styles.versionText}>v1.0.8</Text>
+      </View>
 
       </ScrollView>
 
@@ -346,5 +351,15 @@ const styles = StyleSheet.create({
     color: '#FFF',
     fontWeight: '700',
     fontSize: 15,
+  },
+  versionContainer: {
+    alignItems: 'center',
+    paddingVertical: 20,
+  },
+  versionText: {
+    fontSize: 12,
+    color: '#6B3E1E',
+    fontWeight: '700',
+    opacity: 0.6,
   },
 });

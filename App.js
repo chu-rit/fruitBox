@@ -157,7 +157,7 @@ const styles = StyleSheet.create({
     zIndex: 100,
   },
   tapText: {
-    fontSize: '3vh',
+    fontSize: 28,
     fontFamily: Platform.OS === 'web' ? 'Arial Black' : 'Fredoka_700Bold',
     fontWeight: '900',
     color: '#7A4010',

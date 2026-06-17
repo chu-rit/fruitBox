@@ -75,7 +75,7 @@ const LAYOUT = {
   bgNumberTopPct: '19.5%',
   bgLevelLeftPct: '34%',
   bgScoreLeftPct: '49.5%',
-  bgNumberFontSize: width * 0.05,
+  bgNumberFontSize: Math.max(12, width * 0.05),
   bgLevelWidth: width * 0.10,
   bgScoreWidth: width * 0.12,
 
@@ -1239,7 +1239,7 @@ const TimerBar = React.memo(function TimerBar({ timeLeft, maxTime, flashValue, s
             />
           </Animated.View>
           <View style={{ position: 'absolute', left: 0, top: 0, width: trackWidth, height: trackHeight, justifyContent: 'center', alignItems: 'center' }}>
-            <Text style={{ fontSize: trackHeight * 0.45, fontFamily: 'Fredoka_700Bold', color: '#8B5A3C', textShadowColor: 'rgba(0,0,0,0.5)', textShadowOffset: { width: 1, height: 1 }, textShadowRadius: 3, marginTop: trackHeight * 0.15 }}>{timeDisplay}s</Text>
+            <Text style={{ fontSize: Math.max(12, trackHeight * 0.45), fontFamily: 'Fredoka_700Bold', color: '#8B5A3C', textShadowColor: 'rgba(0,0,0,0.5)', textShadowOffset: { width: 1, height: 1 }, textShadowRadius: 3, marginTop: trackHeight * 0.15 }}>{timeDisplay}s</Text>
           </View>
         </View>
       </View>
@@ -1348,8 +1348,8 @@ const DragOverlay = React.memo(function DragOverlay({ dragSelection, cellSize, c
 });
 
 const Cell = React.memo(function Cell({ cell, anims, isSelected, shakeAnim, cellSize, blockFill, blockStroke, rowIndex, colIndex }) {
-  const appleFontSize = Math.floor(cellSize * 0.55);
-  const numberFontSize = Math.floor(cellSize * 0.40);
+  const appleFontSize = Math.max(10, Math.floor(cellSize * 0.55));
+  const numberFontSize = Math.max(8, Math.floor(cellSize * 0.40));
   const translateY = anims?.translateYAnim || null;
   const opacity = anims?.opacity || null;
   const scale = anims?.scale || null;
@@ -1381,7 +1381,7 @@ const Cell = React.memo(function Cell({ cell, anims, isSelected, shakeAnim, cell
               style={{ width: appleFontSize * 1.2, height: appleFontSize * 1.2 }}
               resizeMode="contain"
             />
-            <Text style={[styles.number, { fontSize: numberFontSize, lineHeight: numberFontSize * 1.2 }]}>{cell.value}</Text>
+            <Text style={[styles.number, { fontSize: numberFontSize, lineHeight: Math.max(12, numberFontSize * 1.2) }]}>{cell.value}</Text>
           </View>
         </>
       )}

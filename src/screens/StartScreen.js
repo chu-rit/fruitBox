@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   View,
   Text,
@@ -24,45 +23,41 @@ const is9_20 = aspectRatio > 1.9;
 
 export default function StartScreen({ onStart, onSettings, onRanking, onLogoPress, gameMode = 'apple' }) {
   const isFruitMode = gameMode === 'fruit';
-  const insets = useSafeAreaInsets();
 
   return (
     <View style={[styles.container, isFruitMode && styles.containerFruit]}>
-
       {/* Background image based on aspect ratio */}
       <Image 
         source={is9_20 ? BG_IMAGE_20 : BG_IMAGE_16} 
-        style={[styles.bgImage, { height: height + insets.top + insets.bottom }]} 
+        style={[styles.bgImage, { height }]} 
         resizeMode="cover"
       />
 
-      {/* Title Section */}
-      <View style={styles.titleContainer}>
-        
-      </View>
+      {/* Content Container */}
+      <View style={styles.contentContainer}>
+        {/* Title Section */}
+        <View style={styles.titleContainer}>
+          
+        </View>
 
-      {/* Menu Buttons */}
-      <View style={styles.menuContainer}>
-        <TouchableOpacity style={[styles.button, isFruitMode && styles.buttonFruit]} onPress={() => { playStartSFX(); startBGM(); onStart(); }}>
-          <Text style={styles.buttonText}></Text>
-        </TouchableOpacity>
+        {/* Menu Buttons - 상단 기준 배치 */}
+        <View style={[styles.menuContainer, { marginTop: height * 0.5 }]}>
+          <TouchableOpacity style={[styles.button, isFruitMode && styles.buttonFruit]} onPress={() => { playStartSFX(); startBGM(); onStart(); }}>
+            <Text style={styles.buttonText}></Text>
+          </TouchableOpacity>
+
+          {isFruitMode && (
+          <TouchableOpacity style={[styles.button, isFruitMode && styles.buttonFruit]} onPress={() => { playStartSFX(); onRanking(); }}>
+            <Text style={styles.buttonText}></Text>
+          </TouchableOpacity>
+        )}
 
         {isFruitMode && (
-        <TouchableOpacity style={[styles.button, isFruitMode && styles.buttonFruit]} onPress={() => { playStartSFX(); onRanking(); }}>
-          <Text style={styles.buttonText}></Text>
-        </TouchableOpacity>
-      )}
-
-      {isFruitMode && (
-        <TouchableOpacity style={[styles.button, isFruitMode && styles.buttonFruit]} onPress={() => { playStartSFX(); onSettings(); }}>
-          <Text style={styles.buttonText}></Text>
-        </TouchableOpacity>
-      )}
-      </View>
-
-      {/* Footer: Version */}
-      <View style={styles.footer}>
-        <Text style={styles.version}>v1.0.7</Text>
+          <TouchableOpacity style={[styles.button, isFruitMode && styles.buttonFruit]} onPress={() => { playStartSFX(); onSettings(); }}>
+            <Text style={styles.buttonText}></Text>
+          </TouchableOpacity>
+        )}
+        </View>
       </View>
     </View>
   );
@@ -73,6 +68,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#FFF8E7',
+  },
+  contentContainer: {
+    flex: 1,
   },
   containerFruit: {
     backgroundColor: '#FFF5E6',
@@ -130,21 +128,5 @@ const styles = StyleSheet.create({
   },
   buttonSecondaryTextFruit: {
     color: 'blue',
-  },
-  footer: {
-    position: 'absolute',
-    bottom: is9_20 ? height * 0.1 : height * 0.05,
-    left: 0,
-    right: 0,
-    alignItems: 'center',
-  },
-  version: {
-    fontSize: 12,
-    opacity: 0.9,
-    color: '#ad7339',
-    fontWeight: '900',
-    textShadowColor: '#000',
-    textShadowOffset: { width: 1, height: 1 },
-    textShadowRadius: 3,
   },
 });

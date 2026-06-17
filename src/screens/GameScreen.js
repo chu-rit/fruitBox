@@ -483,8 +483,8 @@ const Cell = React.memo(function Cell({ cell, anims, isSelected, cellSize }) {
   // }), []);
 
   // Dynamic font sizes based on cell size
-  const appleFontSize = Math.floor(cellSize * 0.55);
-  const numberFontSize = Math.floor(cellSize * 0.32);
+  const appleFontSize = Math.max(10, Math.floor(cellSize * 0.55));
+  const numberFontSize = Math.max(8, Math.floor(cellSize * 0.32));
 
   return (
     <View
