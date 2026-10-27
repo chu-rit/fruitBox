@@ -1,6 +1,7 @@
 {
   "cli": {
-    "version": ">= 5.2.0"
+    "version": ">= 5.2.0",
+    "appVersionSource": "remote"
   },
   "build": {
     "development": {
@@ -14,8 +15,18 @@
       }
     },
     "production": {
+      "autoIncrement": true,
       "android": {
         "buildType": "apk"
+      }
+    }
+  },
+  "submit": {
+    "production": {
+      "ios": {
+        "appleId": "churit@icloud.com",
+        "ascAppId": "6827388383",
+        "appleTeamId": "3W3K8794QY"
       }
     }
   }
